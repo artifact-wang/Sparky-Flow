@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "python3 -m http.server 5173",
-    "test": "node scripts/validate_generation.mjs"
+    "dev": "python3 -m http.server 8080",
+    "test": "node scripts/validate_generation.mjs",
+    "test:pools": "node scripts/validate_word_pools.mjs"
   },
   "dependencies": {
     "playwright": "^1.58.2"

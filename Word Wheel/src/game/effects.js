@@ -1,26 +1,56 @@
 import { randomInt } from "../generation/seededRng.js";
 
-export function pushTrailPoint(state, x, y) {
-  const burstCount = Math.random() > 0.45 ? 2 : 1;
+const MAX_TRAIL_POINTS = 220;
+const MAX_PARTICLES = 420;
+const MAX_RIPPLES = 28;
+const MAX_FLYUPS = 22;
+
+function trimOverflow(collection, maxCount) {
+  while (collection.length > maxCount) {
+    collection.shift();
+  }
+}
+
+export function pushTrailPoint(state, x, y, options = {}) {
+  const {
+    burstMin = 1,
+    burstMax = 2,
+    speedMin = 22,
+    speedMax = 84,
+    sizeMin = 3,
+    sizeMax = 6,
+    lifeMin = 2800,
+    lifeMax = 3300,
+    maxLife = 3400,
+    lift = -12,
+    spinRange = 8,
+    trailCap = MAX_TRAIL_POINTS
+  } = options;
+
+  const minBurst = Math.max(1, Math.floor(burstMin));
+  const maxBurst = Math.max(minBurst, Math.floor(burstMax));
+  const burstCount = minBurst + Math.floor(Math.random() * (maxBurst - minBurst + 1));
+
   for (let i = 0; i < burstCount; i += 1) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 22 + Math.random() * 62;
+    const speed = speedMin + Math.random() * Math.max(0, speedMax - speedMin);
+    const size = sizeMin + Math.random() * Math.max(0, sizeMax - sizeMin);
+    const life = lifeMin + Math.random() * Math.max(0, lifeMax - lifeMin);
     state.effects.trail.push({
       x,
       y,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 12,
-      size: 3 + Math.random() * 3,
+      vy: Math.sin(angle) * speed + lift,
+      size,
       hue: Math.floor(Math.random() * 360),
-      spin: (Math.random() - 0.5) * 8,
+      spin: (Math.random() - 0.5) * spinRange,
       rot: Math.random() * Math.PI * 2,
-      life: 380 + Math.random() * 180,
-      maxLife: 560
+      life,
+      maxLife: Math.max(maxLife, life)
     });
   }
-  if (state.effects.trail.length > 80) {
-    state.effects.trail.shift();
-  }
+
+  trimOverflow(state.effects.trail, Math.max(48, Math.floor(trailCap)));
 }
 
 export function spawnParticleBurst(state, x, y, color, amount = 20) {
@@ -39,6 +69,7 @@ export function spawnParticleBurst(state, x, y, color, amount = 20) {
       color
     });
   }
+  trimOverflow(state.effects.particles, MAX_PARTICLES);
 }
 
 export function spawnGrandCelebration(state, center, bounds, intensity = 1) {
@@ -71,6 +102,7 @@ export function spawnGrandCelebration(state, center, bounds, intensity = 1) {
       spin: (Math.random() - 0.5) * 10
     });
   }
+  trimOverflow(state.effects.particles, MAX_PARTICLES);
 }
 
 export function spawnRipple(
@@ -87,6 +119,7 @@ export function spawnRipple(
     life,
     maxLife: life
   });
+  trimOverflow(state.effects.ripples, MAX_RIPPLES);
 }
 
 export function spawnWordFlyup(state, text, x, y, color = "#ff4fa3") {
@@ -100,6 +133,7 @@ export function spawnWordFlyup(state, text, x, y, color = "#ff4fa3") {
     scale: 1,
     color
   });
+  trimOverflow(state.effects.flyups, MAX_FLYUPS);
 }
 
 export function spawnSuccessBanner(
@@ -191,10 +225,18 @@ export function updateEffects(state, dtMs) {
   state.effects.timerPulse = Math.max(0, state.effects.timerPulse - dt * 2.4);
   state.effects.successPulse = Math.max(0, state.effects.successPulse - dt * 1.5);
 
-  state.wheel.spinVelocity *= 0.965;
-  state.wheel.angleOffset += state.wheel.spinVelocity * dt;
-  state.wheel.glow = Math.max(0, state.wheel.glow - dt * 1.1);
-  state.wheel.centerPulse = Math.max(0, state.wheel.centerPulse - dt * 2.2);
+  if (state.wheel.roundClearSpin) {
+    const roundClearSpinVelocity = 11.2;
+    state.wheel.spinVelocity = roundClearSpinVelocity;
+    state.wheel.angleOffset += state.wheel.spinVelocity * dt;
+    state.wheel.glow = Math.min(2.2, state.wheel.glow + dt * 1.8);
+    state.wheel.centerPulse = 0.34 + Math.sin(state.effects.lanePhase * 2.4) * 0.2;
+  } else {
+    state.wheel.spinVelocity *= 0.965;
+    state.wheel.angleOffset += state.wheel.spinVelocity * dt;
+    state.wheel.glow = Math.max(0, state.wheel.glow - dt * 1.1);
+    state.wheel.centerPulse = Math.max(0, state.wheel.centerPulse - dt * 2.2);
+  }
 
   if (state.hint.revealMs > 0) {
     state.hint.revealMs = Math.max(0, state.hint.revealMs - dtMs);

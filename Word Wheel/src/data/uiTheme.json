@@ -1,0 +1,27 @@
+{
+  "name": "Sparky Candy Arcade",
+  "palette": {
+    "bgTop": "#fff4d8",
+    "bgBottom": "#dff4ff",
+    "panel": "#fffaf1",
+    "panelAlt": "#fffdf7",
+    "ink": "#1f2b38",
+    "inkSoft": "#4e6073",
+    "primary": "#27b8ff",
+    "primaryDark": "#1288e0",
+    "accent": "#ff5a8e",
+    "accentSoft": "#ffd6e5",
+    "mint": "#83f0d6",
+    "warning": "#ff8d57",
+    "success": "#52d58a",
+    "tile": "#ffffff",
+    "tileBorder": "#253245",
+    "shadow": "rgba(18, 29, 43, 0.3)"
+  },
+  "radius": {
+    "xl": 34,
+    "lg": 24,
+    "md": 16,
+    "sm": 10
+  }
+}

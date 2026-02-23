@@ -233,19 +233,26 @@ function pickWheelLetters(pool, config, rng) {
   return null;
 }
 
-function scoreWordSelection(word, selected, rng) {
+function scoreWordSelection(word, selected, rng, seenSet, recentSet) {
   if (!selected.length) {
-    return word.length * 8 + rng() * 2;
+    const firstUnseenBonus = seenSet.has(word) ? 0 : 12;
+    const firstRecentPenalty = recentSet.has(word) ? 16 : 0;
+    return word.length * 8 + firstUnseenBonus - firstRecentPenalty + rng() * 2;
   }
 
   const overlaps = selected.reduce((sum, current) => sum + overlapCount(word, current), 0);
-  return word.length * 5 + overlaps * 4 + rng() * 1.5;
+  const unseenBonus = seenSet.has(word) ? 0 : 10;
+  const recentPenalty = recentSet.has(word) ? 14 : 0;
+  return word.length * 5 + overlaps * 4 + unseenBonus - recentPenalty + rng() * 1.5;
 }
 
-function selectBoardWords(buildable, config, rng) {
+function selectBoardWords(buildable, config, rng, freshness = {}) {
   const source = shuffleInPlace(buildable.slice(), rng);
   const selected = [];
   const targetCount = Math.min(config.targetWords, source.length);
+  const seenSet = freshness.seenSet || new Set();
+  const recentSet = freshness.recentSet || new Set();
+  let recentWordReuseBlocked = false;
 
   while (selected.length < targetCount && source.length) {
     const candidates =
@@ -257,10 +264,17 @@ function selectBoardWords(buildable, config, rng) {
       break;
     }
 
-    let bestWord = candidates[0].word;
+    const nonRecentCandidates = candidates.filter((entry) => !recentSet.has(entry.word));
+    const useNonRecentCandidates = recentSet.size > 0 && nonRecentCandidates.length > 0;
+    const rankedCandidates = useNonRecentCandidates ? nonRecentCandidates : candidates;
+    if (useNonRecentCandidates) {
+      recentWordReuseBlocked = true;
+    }
+
+    let bestWord = rankedCandidates[0].word;
     let bestScore = -Infinity;
-    candidates.forEach((entry) => {
-      const score = scoreWordSelection(entry.word, selected, rng);
+    rankedCandidates.forEach((entry) => {
+      const score = scoreWordSelection(entry.word, selected, rng, seenSet, recentSet);
       if (score > bestScore) {
         bestScore = score;
         bestWord = entry.word;
@@ -274,7 +288,10 @@ function selectBoardWords(buildable, config, rng) {
     }
   }
 
-  return selected;
+  return {
+    selectedWords: selected,
+    recentWordReuseBlocked
+  };
 }
 
 function buildCrossword(words, minWords, rng) {
@@ -306,8 +323,18 @@ function buildCrossword(words, minWords, rng) {
   return normalizeBoard(cells, placements);
 }
 
-export function generateRound({ grade, roundIndex, sessionSalt, pool, config }) {
+export function generateRound({
+  grade,
+  roundIndex,
+  sessionSalt,
+  pool,
+  config,
+  seenWords = [],
+  recentWords = []
+}) {
   const seedBase = `${grade}-${roundIndex}-${sessionSalt}`;
+  const seenSet = new Set(seenWords.map((word) => normalizeWord(word)).filter(Boolean));
+  const recentSet = new Set(recentWords.map((word) => normalizeWord(word)).filter(Boolean));
 
   for (let attempt = 0; attempt < 500; attempt += 1) {
     const seed = `${seedBase}-${attempt}`;
@@ -325,7 +352,11 @@ export function generateRound({ grade, roundIndex, sessionSalt, pool, config }) 
       continue;
     }
 
-    const selectedWords = selectBoardWords(wheel.buildable, runtimeConfig, rng);
+    const selection = selectBoardWords(wheel.buildable, runtimeConfig, rng, {
+      seenSet,
+      recentSet
+    });
+    const selectedWords = selection.selectedWords;
     if (selectedWords.length < runtimeConfig.minBoardWords) {
       continue;
     }
@@ -348,7 +379,14 @@ export function generateRound({ grade, roundIndex, sessionSalt, pool, config }) 
       wheelLetters: wheel.letters.map((letter) => letter.toUpperCase()),
       board,
       validWords: board.words.map((word) => word.text).sort((a, b) => a.localeCompare(b)),
-      wordLookup
+      wordLookup,
+      wordPoolMeta: {
+        gradePoolSize: pool.length,
+        recentWordReuseBlocked: selection.recentWordReuseBlocked,
+        usedRecentWords: selectedWords.filter((word) => recentSet.has(word)).length,
+        seenWordsCount: seenSet.size,
+        recentWordsCount: recentSet.size
+      }
     };
   }
 

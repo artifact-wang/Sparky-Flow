@@ -26,16 +26,17 @@ function drawShadowedCard(ctx, x, y, w, h, r, fill, stroke, shadow) {
 function drawBackground(ctx, width, height, palette, phase) {
   const gradient = ctx.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, palette.bgTop);
+  gradient.addColorStop(0.52, "rgba(255, 228, 245, 0.95)");
   gradient.addColorStop(1, palette.bgBottom);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
   ctx.save();
   const circles = [
-    { x: width * 0.16, y: height * 0.2, r: 120, c: "rgba(255,255,255,0.23)", wobble: 11 },
-    { x: width * 0.78, y: height * 0.18, r: 90, c: "rgba(255,210,238,0.4)", wobble: 18 },
-    { x: width * 0.56, y: height * 0.74, r: 160, c: "rgba(255,245,255,0.23)", wobble: 13 },
-    { x: width * 0.86, y: height * 0.82, r: 80, c: "rgba(188,248,233,0.25)", wobble: 15 }
+    { x: width * 0.13, y: height * 0.19, r: 148, c: "rgba(255,255,255,0.28)", wobble: 11 },
+    { x: width * 0.78, y: height * 0.17, r: 112, c: "rgba(148, 235, 255, 0.28)", wobble: 17 },
+    { x: width * 0.58, y: height * 0.74, r: 172, c: "rgba(255, 214, 229, 0.27)", wobble: 13 },
+    { x: width * 0.88, y: height * 0.83, r: 92, c: "rgba(154, 247, 219, 0.25)", wobble: 15 }
   ];
 
   circles.forEach((circle, index) => {
@@ -45,6 +46,18 @@ function drawBackground(ctx, width, height, palette, phase) {
     ctx.arc(circle.x, y, circle.r, 0, Math.PI * 2);
     ctx.fill();
   });
+
+  ctx.globalAlpha = 0.18;
+  for (let i = 0; i < 6; i += 1) {
+    const y = height * 0.17 + i * 120 + Math.sin(phase * 1.2 + i * 0.8) * 11;
+    ctx.strokeStyle = i % 2 === 0 ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 188, 213, 0.6)";
+    ctx.lineWidth = 18;
+    ctx.beginPath();
+    ctx.moveTo(-30, y);
+    ctx.quadraticCurveTo(width * 0.3, y - 18, width * 0.56, y + 10);
+    ctx.quadraticCurveTo(width * 0.85, y + 30, width + 30, y + 4);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -222,7 +235,7 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
       drawW,
       drawH,
       10,
-      solved ? "#fff5fd" : goalCell ? "rgba(255, 245, 224, 0.98)" : palette.tile,
+      solved ? "rgba(236, 255, 246, 0.96)" : goalCell ? "rgba(255, 248, 224, 0.98)" : palette.tile,
       palette.tileBorder,
       "rgba(17,20,29,0.18)"
     );
@@ -246,7 +259,7 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
     }
 
     if (solved || hinted) {
-      ctx.fillStyle = solved ? palette.ink : palette.accent;
+      ctx.fillStyle = solved ? palette.ink : palette.primaryDark;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = `700 ${Math.max(18, drawH * 0.55)}px \"Baloo 2\", \"Trebuchet MS\", sans-serif`;
@@ -264,56 +277,7 @@ function drawTrace(ctx, state, palette, layout, timeMs) {
   }
 
   const points = state.trace.points;
-  const first = points[0];
-  const last = points[points.length - 1];
-  if (!first || !last) {
-    return;
-  }
-
-  const drawPath = () => {
-    ctx.beginPath();
-    ctx.moveTo(first.x, first.y);
-    for (let i = 1; i < points.length - 1; i += 1) {
-      const point = points[i];
-      const next = points[i + 1];
-      if (!point || !next) {
-        continue;
-      }
-      const midX = (point.x + next.x) * 0.5;
-      const midY = (point.y + next.y) * 0.5;
-      ctx.quadraticCurveTo(point.x, point.y, midX, midY);
-    }
-    ctx.lineTo(last.x, last.y);
-  };
-
   const baseHue = timeMs * 0.2;
-
-  ctx.save();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.globalAlpha = 0.28;
-  ctx.strokeStyle = rainbowColor(baseHue + 25, 0.44, 90, 70);
-  ctx.shadowColor = rainbowColor(baseHue + 35, 0.45, 90, 65);
-  ctx.shadowBlur = 16;
-  ctx.lineWidth = 17;
-  drawPath();
-  ctx.stroke();
-  ctx.restore();
-
-  for (let i = 0; i < 3; i += 1) {
-    const hue = baseHue + i * 120;
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.globalAlpha = 0.75;
-    ctx.strokeStyle = rainbowColor(hue, 0.9, 88, 64);
-    ctx.shadowColor = rainbowColor(hue + 16, 0.45, 85, 62);
-    ctx.shadowBlur = 9;
-    ctx.lineWidth = 11 - i * 2.4;
-    drawPath();
-    ctx.stroke();
-    ctx.restore();
-  }
 
   const sparkleStart = Math.max(0, points.length - 12);
   for (let i = sparkleStart; i < points.length; i += 1) {
@@ -334,10 +298,10 @@ function drawTrace(ctx, state, palette, layout, timeMs) {
     ctx.font = '700 36px "Baloo 2", "Trebuchet MS", sans-serif';
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(255, 79, 163, 0.15)";
+    ctx.fillStyle = "rgba(39, 184, 255, 0.18)";
     const display = state.trace.candidateWord;
     ctx.fillText(display, layout.wheelCenter.x, layout.wheelPanel.y + layout.wheelPanel.height - 34);
-    ctx.fillStyle = "#2a2f39";
+    ctx.fillStyle = "#1f2a38";
     ctx.fillText(display, layout.wheelCenter.x, layout.wheelPanel.y + layout.wheelPanel.height - 38);
     ctx.restore();
   }
@@ -348,7 +312,7 @@ function drawWheel(ctx, state, layout, palette, timeMs) {
   const successPulse = state.effects.successPulse || 0;
 
   ctx.save();
-  ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.32)";
   ctx.beginPath();
   ctx.arc(layout.wheelCenter.x, layout.wheelCenter.y, layout.wheelRadius + 20 + wheelGlow * 10, 0, Math.PI * 2);
   ctx.fill();
@@ -361,11 +325,12 @@ function drawWheel(ctx, state, layout, palette, timeMs) {
     layout.wheelCenter.y,
     layout.wheelRadius * 1.05
   );
-  wheelGradient.addColorStop(0, "#ffd8ef");
-  wheelGradient.addColorStop(1, "#ffbfe4");
+  wheelGradient.addColorStop(0, "rgba(255, 250, 238, 0.98)");
+  wheelGradient.addColorStop(0.55, "rgba(209, 244, 255, 0.98)");
+  wheelGradient.addColorStop(1, "rgba(255, 215, 232, 0.98)");
 
   ctx.fillStyle = wheelGradient;
-  ctx.strokeStyle = "#2d3140";
+  ctx.strokeStyle = palette.tileBorder;
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.arc(layout.wheelCenter.x, layout.wheelCenter.y, layout.wheelRadius, 0, Math.PI * 2);
@@ -375,7 +340,7 @@ function drawWheel(ctx, state, layout, palette, timeMs) {
   if (successPulse > 0.01) {
     ctx.save();
     ctx.globalAlpha = Math.min(0.45, successPulse * 0.36);
-    ctx.strokeStyle = "#ffd35c";
+    ctx.strokeStyle = "rgba(255, 224, 110, 0.96)";
     ctx.lineWidth = 8;
     ctx.beginPath();
     ctx.arc(layout.wheelCenter.x, layout.wheelCenter.y, layout.wheelRadius + 10 + successPulse * 18, 0, Math.PI * 2);
@@ -387,7 +352,16 @@ function drawWheel(ctx, state, layout, palette, timeMs) {
 
   layout.wheelNodes.forEach((node) => {
     const selected = selectedSet.has(node.index);
-    const nodeHue = timeMs * 0.18 + node.index * 42;
+    const nodeHue = timeMs * 0.22 + node.index * 42;
+    const fill = selected
+      ? (() => {
+          const gradient = ctx.createLinearGradient(node.x - node.r, node.y - node.r, node.x + node.r, node.y + node.r);
+          gradient.addColorStop(0, rainbowColor(nodeHue, 0.96, 90, 68));
+          gradient.addColorStop(0.5, rainbowColor(nodeHue + 122, 0.96, 90, 74));
+          gradient.addColorStop(1, rainbowColor(nodeHue + 244, 0.96, 88, 66));
+          return gradient;
+        })()
+      : "#fff";
     drawShadowedCard(
       ctx,
       node.x - node.r,
@@ -395,26 +369,26 @@ function drawWheel(ctx, state, layout, palette, timeMs) {
       node.r * 2,
       node.r * 2,
       node.r * 0.45,
-      selected ? "rgba(255, 255, 255, 0.98)" : "#fff",
-      selected ? rainbowColor(nodeHue, 0.98, 90, 62) : "#2d3140",
+      fill,
+      palette.tileBorder,
       "rgba(17,20,29,0.2)"
     );
     if (selected) {
       ctx.save();
-      ctx.strokeStyle = rainbowColor(nodeHue + 145, 0.8, 88, 62);
-      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.2 + (Math.sin(timeMs * 0.02 + node.index * 0.8) + 1) * 0.14;
+      ctx.fillStyle = "#ffffff";
       roundedRectPath(
         ctx,
-        node.x - node.r - 2.5,
-        node.y - node.r - 2.5,
-        node.r * 2 + 5,
-        node.r * 2 + 5,
-        node.r * 0.5
+        node.x - node.r + 1.8,
+        node.y - node.r + 1.8,
+        node.r * 2 - 3.6,
+        node.r * 2 - 3.6,
+        node.r * 0.42
       );
-      ctx.stroke();
+      ctx.fill();
       ctx.restore();
     }
-    ctx.fillStyle = palette.ink;
+    ctx.fillStyle = selected ? "#1c2534" : palette.ink;
     ctx.font = `700 ${Math.max(20, node.r * 0.9)}px \"Baloo 2\", \"Trebuchet MS\", sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -433,10 +407,10 @@ function drawWheel(ctx, state, layout, palette, timeMs) {
     layout.shuffleButton.r * 2,
     layout.shuffleButton.r * 0.5,
     "#ffffff",
-    "#2d3140",
+    palette.tileBorder,
     "rgba(17,20,29,0.25)"
   );
-  ctx.fillStyle = "#2d3140";
+  ctx.fillStyle = palette.tileBorder;
   ctx.font = `700 ${Math.max(20, layout.shuffleButton.r * 0.85)}px \"Baloo 2\", \"Trebuchet MS\", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -558,7 +532,7 @@ function drawAccelerationLanes(ctx, state, layout) {
   for (let i = 0; i < laneCount; i += 1) {
     const offset = ((state.effects.lanePhase * 150 + i * 44) % (layout.wheelPanel.width + 220)) - 110;
     const y = layout.wheelPanel.y + 38 + i * ((layout.wheelPanel.height - 75) / laneCount);
-    ctx.strokeStyle = i % 2 === 0 ? "#ff9acb" : "#ffd9ef";
+    ctx.strokeStyle = i % 2 === 0 ? "rgba(39, 184, 255, 0.84)" : "rgba(255, 138, 184, 0.76)";
     ctx.lineWidth = 5;
     ctx.beginPath();
     ctx.moveTo(layout.wheelPanel.x + offset, y);
@@ -603,9 +577,9 @@ export function createRenderer(canvas, theme) {
       layout.boardPanel.width,
       layout.boardPanel.height,
       28,
-      "rgba(255, 249, 255, 0.76)",
-      "rgba(255,255,255,0.9)",
-      "rgba(17,20,29,0.12)"
+      "rgba(255, 251, 243, 0.8)",
+      "rgba(255, 255, 255, 0.95)",
+      "rgba(17,20,29,0.14)"
     );
 
     drawShadowedCard(
@@ -615,9 +589,9 @@ export function createRenderer(canvas, theme) {
       layout.wheelPanel.width,
       layout.wheelPanel.height,
       28,
-      "rgba(255, 249, 255, 0.64)",
-      "rgba(255,255,255,0.9)",
-      "rgba(17,20,29,0.1)"
+      "rgba(245, 252, 255, 0.7)",
+      "rgba(255, 255, 255, 0.95)",
+      "rgba(17,20,29,0.12)"
     );
 
     drawAccelerationLanes(ctx, state, layout);
@@ -627,10 +601,10 @@ export function createRenderer(canvas, theme) {
     drawEffects(ctx, state, layout, nowMs);
 
     ctx.save();
-    ctx.fillStyle = "rgba(37, 43, 56, 0.55)";
+    ctx.fillStyle = "rgba(37, 43, 56, 0.62)";
     ctx.font = '700 24px "Baloo 2", "Trebuchet MS", sans-serif';
     ctx.textAlign = "center";
-    ctx.fillText("Drag to connect letters", layout.wheelCenter.x, layout.wheelPanel.y + layout.wheelPanel.height - 14);
+    ctx.fillText("Swipe to spell words", layout.wheelCenter.x, layout.wheelPanel.y + layout.wheelPanel.height - 14);
     ctx.restore();
   }
 

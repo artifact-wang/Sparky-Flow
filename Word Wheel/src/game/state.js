@@ -7,6 +7,7 @@ function defaultGradeStats() {
   GRADE_KEYS.forEach((grade) => {
     stats[grade] = {
       roundsCompleted: 0,
+      maxRound: 0,
       stars: 0,
       bestStreak: 0,
       bestScore: 0
@@ -41,6 +42,7 @@ function sanitizeSaveState(raw) {
     const source = raw.gradeStats && raw.gradeStats[grade] ? raw.gradeStats[grade] : {};
     next.gradeStats[grade] = {
       roundsCompleted: Number(source.roundsCompleted) || 0,
+      maxRound: Math.max(0, Number(source.maxRound) || Number(source.roundsCompleted) || 0),
       stars: Number(source.stars) || 0,
       bestStreak: Number(source.bestStreak) || 0,
       bestScore: Number(source.bestScore) || 0
@@ -86,6 +88,13 @@ export function createRuntimeState(saveState) {
     wordSequence: [],
     wordSequenceIndex: 0,
     currentGoalWord: null,
+    roundWordPoolMeta: {
+      gradePoolSize: 0,
+      recentWordReuseBlocked: false,
+      seenWordsCount: 0,
+      recentWordsCount: 0,
+      usedRecentWords: 0
+    },
     board: null,
     score: 0,
     stars: saveState.stars,
@@ -98,6 +107,7 @@ export function createRuntimeState(saveState) {
       letters: [],
       angleOffset: 0,
       spinVelocity: 0,
+      roundClearSpin: false,
       glow: 0,
       centerPulse: 0
     },
@@ -113,6 +123,7 @@ export function createRuntimeState(saveState) {
       revealCellKey: null,
       revealMs: 0
     },
+    roundClearRewards: [],
     effects: {
       particles: [],
       trail: [],
@@ -132,6 +143,7 @@ export function ensureGradeStats(saveState, grade) {
   if (!saveState.gradeStats[grade]) {
     saveState.gradeStats[grade] = {
       roundsCompleted: 0,
+      maxRound: 0,
       stars: 0,
       bestStreak: 0,
       bestScore: 0
@@ -147,6 +159,7 @@ export function applyRoundResults({ state, starGain }) {
 
   const gradeStats = ensureGradeStats(state.saveState, state.grade);
   gradeStats.roundsCompleted += 1;
+  gradeStats.maxRound = Math.max(gradeStats.maxRound || 0, state.roundIndex + 1);
   gradeStats.stars += starGain;
   gradeStats.bestStreak = Math.max(gradeStats.bestStreak, state.streak);
   gradeStats.bestScore = Math.max(gradeStats.bestScore, state.score);

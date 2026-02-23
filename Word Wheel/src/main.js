@@ -28,6 +28,7 @@ const saveState = loadSaveState();
 const state = createRuntimeState(saveState);
 const audio = new AudioSystem({ muted: saveState.audioMuted });
 const poolCache = new Map();
+const gradeWordMemory = new Map();
 const sessionRng = () => Math.random();
 const urlParams = new URLSearchParams(window.location.search);
 const parsedSeed = urlParams.get("seed");
@@ -35,6 +36,58 @@ let seedOverride =
   parsedSeed !== null && parsedSeed.trim() !== "" && Number.isFinite(Number(parsedSeed))
     ? Number(parsedSeed)
     : null;
+
+const RECENT_WINDOW_BY_GRADE = {
+  1: 28,
+  2: 30,
+  3: 34,
+  4: 38,
+  5: 42
+};
+
+function getGradeWordMemory(grade) {
+  if (!gradeWordMemory.has(grade)) {
+    gradeWordMemory.set(grade, {
+      seenWords: new Set(),
+      recentWords: []
+    });
+  }
+  return gradeWordMemory.get(grade);
+}
+
+function resetGradeWordMemory(grade) {
+  if (!grade) {
+    return;
+  }
+
+  gradeWordMemory.set(grade, {
+    seenWords: new Set(),
+    recentWords: []
+  });
+}
+
+function rememberRoundWords(grade, words) {
+  if (!grade || !Array.isArray(words) || !words.length) {
+    return;
+  }
+  const memory = getGradeWordMemory(grade);
+  const windowSize = RECENT_WINDOW_BY_GRADE[grade] || 32;
+
+  words.forEach((rawWord) => {
+    const word = String(rawWord || "").toLowerCase();
+    if (!word) {
+      return;
+    }
+
+    memory.seenWords.add(word);
+    memory.recentWords = memory.recentWords.filter((entry) => entry !== word);
+    memory.recentWords.push(word);
+  });
+
+  if (memory.recentWords.length > windowSize) {
+    memory.recentWords.splice(0, memory.recentWords.length - windowSize);
+  }
+}
 
 function randomSalt() {
   if (window.crypto && typeof window.crypto.getRandomValues === "function") {
@@ -47,21 +100,21 @@ function randomSalt() {
 
 let theme = {
   palette: {
-    bgTop: "#ffe8f6",
-    bgBottom: "#f3d3ff",
-    panel: "#fff6ff",
-    panelAlt: "#fff",
-    ink: "#252b37",
-    inkSoft: "#525969",
-    primary: "#31b8ff",
-    primaryDark: "#0f95dd",
-    accent: "#ff4fa3",
-    accentSoft: "#ffd1ea",
-    warning: "#ff8a5b",
-    success: "#5ddf8d",
-    tile: "#fff",
-    tileBorder: "#2d3140",
-    shadow: "rgba(20,24,35,0.28)"
+    bgTop: "#fff4d8",
+    bgBottom: "#dff4ff",
+    panel: "#fffaf1",
+    panelAlt: "#fffdf7",
+    ink: "#1f2b38",
+    inkSoft: "#4e6073",
+    primary: "#27b8ff",
+    primaryDark: "#1288e0",
+    accent: "#ff5a8e",
+    accentSoft: "#ffd6e5",
+    warning: "#ff8d57",
+    success: "#52d58a",
+    tile: "#ffffff",
+    tileBorder: "#253245",
+    shadow: "rgba(18,29,43,0.3)"
   }
 };
 
@@ -142,21 +195,20 @@ function awardStarsForRound() {
 }
 
 function buildRoundConfig(baseConfig, roundSerial) {
-  const tier = Math.min(9, Math.floor(roundSerial / 2));
-  const boardBoost = Math.floor(tier / 4);
+  const tier = Math.min(9, Math.floor(roundSerial / 3));
+  const boardBoost = Math.floor(tier / 5);
 
   return {
     ...baseConfig,
     difficultyTier: tier,
     timerSeconds: Math.max(
-      Math.round(baseConfig.timerSeconds * 0.62),
-      Math.round(baseConfig.timerSeconds - tier * 2.2)
+      Math.round(baseConfig.timerSeconds * 0.7),
+      Math.round(baseConfig.timerSeconds - tier * 1.6)
     ),
     targetWords: Math.min(baseConfig.targetWords + boardBoost, baseConfig.targetWords + 2),
     minBoardWords: Math.min(baseConfig.minBoardWords + boardBoost, baseConfig.minBoardWords + 2),
     hintBudget: Math.max(1, baseConfig.hintBudget - Math.floor(tier / 4)),
-    missesForHint: baseConfig.missesForHint + Math.floor(tier / 4),
-    streakBonusMs: Math.max(450, baseConfig.streakBonusMs - tier * 45)
+    streakBonusMs: Math.max(520, baseConfig.streakBonusMs - tier * 34)
   };
 }
 
@@ -199,30 +251,15 @@ function pickHintTargetWord() {
     return null;
   }
 
-  if (state.currentGoalWord) {
-    const target = unsolved.find((word) => word.text === state.currentGoalWord);
-    if (target) {
-      return target;
-    }
-  }
-
-  for (let i = state.wordSequenceIndex || 0; i < state.wordSequence.length; i += 1) {
-    const nextWord = state.wordSequence[i];
-    const target = unsolved.find((word) => word.text === nextWord);
-    if (target) {
-      return target;
-    }
-  }
-
+  // Any unsolved word is valid now; hints can complete whichever remains first.
   return unsolved[0];
 }
 
-function useHintWord({ auto = false } = {}) {
+function useHintWord() {
   if (state.mode !== "playing" || !state.grade || !state.board) {
     return false;
   }
 
-  const config = state.roundConfig || getGradeConfig(state.grade);
   if (state.hint.remaining <= 0 || state.hint.cooldownMs > 0) {
     return false;
   }
@@ -234,25 +271,11 @@ function useHintWord({ auto = false } = {}) {
 
   state.hint.remaining -= 1;
   state.hint.cooldownMs = Math.max(2400, 7600 - state.roundDifficultyTier * 320);
-  state.misses = 0;
   state.hint.revealCellKey = `${target.x},${target.y}`;
   state.hint.revealMs = 1200;
 
   solveWord(target.id, { fromHint: true });
   return true;
-}
-
-function triggerHintIfNeeded() {
-  if (state.mode !== "playing" || !state.board || !state.grade) {
-    return;
-  }
-
-  const config = state.roundConfig || getGradeConfig(state.grade);
-  if (state.misses < config.missesForHint) {
-    return;
-  }
-
-  useHintWord({ auto: true });
 }
 
 function showTimeoutModal() {
@@ -269,17 +292,22 @@ function showTimeoutModal() {
   });
 }
 
-function showRoundClearModal(starGain) {
+function showRoundClearModal(starGain, rewardItems = []) {
+  const hintRewardTotal = rewardItems.reduce((total, reward) => total + (Number(reward?.hints) || 0), 0);
   state.modal = {
     type: "round-clear",
     title: "Round Cleared",
-    body: `+${starGain} stars`
+    body: hintRewardTotal ? `+${starGain} stars, +${hintRewardTotal} hints` : `+${starGain} stars`,
+    rewards: rewardItems
   };
   ui.showModal({
     title: "Round Cleared!",
-    body: `You earned ${starGain} star${starGain > 1 ? "s" : ""}. Ready for the next sprint?`,
+    body: hintRewardTotal
+      ? `You earned ${starGain} star${starGain > 1 ? "s" : ""} and ${hintRewardTotal} extra hint${hintRewardTotal === 1 ? "" : "s"}.`
+      : `You earned ${starGain} star${starGain > 1 ? "s" : ""}.`,
     primaryLabel: "Next Round",
-    secondaryLabel: "Grade Menu"
+    secondaryLabel: "Grade Menu",
+    rewards: rewardItems
   });
 }
 
@@ -313,15 +341,12 @@ function solveWord(wordId, options = {}) {
   if (!boardWord || boardWord.solved) {
     return;
   }
-  if (!fromHint && state.currentGoalWord && boardWord.text !== state.currentGoalWord) {
-    rejectWord(`Next: ${state.currentGoalWord.toUpperCase()}`);
-    return;
-  }
 
   const config = state.roundConfig || getGradeConfig(state.grade);
   boardWord.solved = true;
   state.board.solvedCount += 1;
-  state.misses = 0;
+  state.wordSequenceIndex = state.board.solvedCount;
+  state.currentGoalWord = null;
   animateSolvedWordCells(boardWord, fromHint ? "hint" : "solve");
 
   const basePoints = config.scoreBase + boardWord.text.length * config.wordLengthBonus + state.combo * 2;
@@ -356,6 +381,7 @@ function solveWord(wordId, options = {}) {
       scale: 0.95
     });
     shakeWheel(state, 0.55);
+    audio.playHintUse();
   } else {
     const celebrationWords = ["Nice!", "Great!", "Awesome!", "Brilliant!", "Super Star!"];
     const celebrationText =
@@ -390,13 +416,7 @@ function solveWord(wordId, options = {}) {
     spawnWordFlyup(state, `+${points}`, center.x, center.y - 10, "#ff4fa3");
     triggerAccelerationLane(state, 1 + state.combo * 0.08);
     shakeWheel(state, 1 + state.combo * 0.12);
-  }
-
-  if (boardWord.text === state.currentGoalWord) {
-    state.wordSequenceIndex += 1;
-    state.currentGoalWord = state.wordSequence[state.wordSequenceIndex] || null;
-  } else if (state.currentGoalWord === null) {
-    state.currentGoalWord = state.wordSequence[state.wordSequenceIndex] || null;
+    audio.playWordSolve(state.combo);
   }
 
   if (!fromHint && state.combo >= 3) {
@@ -412,12 +432,65 @@ function solveWord(wordId, options = {}) {
       endRadius: renderer.getLayout().wheelRadius + 56,
       width: 5
     });
-    audio.playCombo(state.combo);
+    audio.playComboBonus(state.combo);
   }
 
-  audio.playCorrect(state.combo);
-
   if (state.board.solvedCount >= state.board.words.length) {
+    rememberRoundWords(
+      state.grade,
+      state.board.words.map((word) => word.text)
+    );
+
+    const rewardItems = [];
+    const finishedWithHalfTimeLeft = state.timerMaxMs > 0 && state.timerMs >= state.timerMaxMs * 0.5;
+    if (finishedWithHalfTimeLeft) {
+      rewardItems.push({
+        title: "Speed Finish",
+        hints: 1,
+        tone: "speed"
+      });
+      spawnSuccessBanner(state, {
+        text: "Speed Hint +1",
+        color: "#4fbfff",
+        accent: "#e1f6ff",
+        life: 1280,
+        scale: 1.02
+      });
+    }
+
+    const flawlessRound = state.misses === 0;
+    if (flawlessRound) {
+      rewardItems.push({
+        title: "Flawless Round",
+        hints: 2,
+        tone: "flawless"
+      });
+      spawnSuccessBanner(state, {
+        text: "Flawless +2 Hints!",
+        color: "#ff74b8",
+        accent: "#fff0a8",
+        life: 1440,
+        scale: 1.12
+      });
+      audio.playPerfectRound();
+    }
+
+    const hintReward = rewardItems.reduce((total, reward) => total + (Number(reward.hints) || 0), 0);
+    if (hintReward > 0) {
+      state.hint.remaining += hintReward;
+      spawnParticleBurst(state, layout.wheelCenter.x, layout.wheelCenter.y, "rgba(255, 245, 188, 0.86)", 26);
+      spawnRipple(state, {
+        x: layout.wheelCenter.x,
+        y: layout.wheelCenter.y,
+        color: "rgba(255, 229, 130, 0.68)",
+        startRadius: 18,
+        endRadius: layout.wheelRadius + 120,
+        width: 6,
+        life: 760
+      });
+    }
+
+    state.roundClearRewards = rewardItems;
     const starGain = awardStarsForRound();
     spawnSuccessBanner(state, {
       text: "Round Cleared!",
@@ -434,9 +507,12 @@ function solveWord(wordId, options = {}) {
     );
     applyRoundResults({ state, starGain });
     saveProgress();
+    state.wheel.roundClearSpin = true;
+    state.wheel.spinVelocity = 11.2;
+    state.wheel.glow = Math.max(1.2, state.wheel.glow);
     setMode("round-clear");
     audio.playRoundClear();
-    showRoundClearModal(starGain);
+    showRoundClearModal(starGain, rewardItems);
   }
 }
 
@@ -444,7 +520,7 @@ function rejectWord(message = "Try again") {
   state.combo = 0;
   state.streak = 0;
   state.misses += 1;
-  audio.playWrong();
+  audio.playInvalidWord();
   const center = renderer.getLayout().wheelCenter;
   spawnRipple(state, { x: center.x, y: center.y, color: "rgba(255, 117, 117, 0.55)", startRadius: 8, endRadius: 80, width: 4, life: 380 });
   spawnWordFlyup(
@@ -454,7 +530,6 @@ function rejectWord(message = "Try again") {
     center.y - renderer.getLayout().wheelRadius - 28,
     theme.palette.warning
   );
-  triggerHintIfNeeded();
 }
 
 function submitTraceWord() {
@@ -466,12 +541,6 @@ function submitTraceWord() {
   const activeConfig = state.roundConfig || getGradeConfig(state.grade);
   if (word.length < activeConfig.minWordLength) {
     rejectWord();
-    return;
-  }
-
-  const expectedWord = state.currentGoalWord;
-  if (expectedWord && word !== expectedWord) {
-    rejectWord(`Next: ${expectedWord.toUpperCase()}`);
     return;
   }
 
@@ -495,7 +564,42 @@ function shuffleWheel() {
   }
   shuffleInPlace(state.wheel.letters, sessionRng);
   shakeWheel(state, 0.45);
-  audio.playTap();
+  audio.playShuffle();
+}
+
+function emitRoundClearWheelSparkles() {
+  if (!state.wheel.roundClearSpin) {
+    return;
+  }
+
+  const layout = renderer.getLayout();
+  const burstCount = 3 + (sessionRng() > 0.58 ? 1 : 0);
+
+  for (let i = 0; i < burstCount; i += 1) {
+    const orbit = state.wheel.angleOffset * 2.8 + i * 1.15 + sessionRng() * 0.9;
+    const radius = layout.wheelRadius + 18 + sessionRng() * 46;
+    const x = layout.wheelCenter.x + Math.cos(orbit) * radius;
+    const y = layout.wheelCenter.y + Math.sin(orbit) * radius;
+    pushTrailPoint(state, x, y, {
+      burstMin: 3,
+      burstMax: 5,
+      speedMin: 24,
+      speedMax: 108,
+      sizeMin: 5.8,
+      sizeMax: 11.2,
+      lifeMin: 2400,
+      lifeMax: 3600,
+      maxLife: 3800,
+      lift: -10,
+      spinRange: 12,
+      trailCap: 420
+    });
+
+    if (sessionRng() > 0.38) {
+      const hue = Math.floor(sessionRng() * 360);
+      spawnParticleBurst(state, x, y, `hsla(${hue}, 94%, 68%, 0.92)`, 2 + Math.floor(sessionRng() * 2));
+    }
+  }
 }
 
 function beginTrace(nodeIndex, point) {
@@ -511,7 +615,7 @@ function beginTrace(nodeIndex, point) {
   state.trace.points = [point];
   state.trace.candidateWord = candidateWordFromIndices(state.trace.indices);
   pushTrailPoint(state, point.x, point.y);
-  audio.playTap();
+  audio.playTraceStart();
 }
 
 function appendTrace(nodeIndex, point) {
@@ -534,7 +638,7 @@ function appendTrace(nodeIndex, point) {
   state.trace.points.push(point);
   state.trace.candidateWord = candidateWordFromIndices(state.trace.indices);
   pushTrailPoint(state, point.x, point.y);
-  audio.playTap();
+  audio.playTraceAppend();
 }
 
 function traceMove(point) {
@@ -584,7 +688,7 @@ function appendKeyboardLetter(letter) {
     state.trace.points.push({ x: node.x, y: node.y });
     pushTrailPoint(state, node.x, node.y);
   }
-  audio.playTap();
+  audio.playTraceAppend();
 }
 
 function removeLastTraceLetter() {
@@ -607,6 +711,7 @@ async function startRound() {
   const baseConfig = getGradeConfig(state.grade);
   const config = buildRoundConfig(baseConfig, state.roundSerial);
   const pool = await getPoolForGrade(state.grade);
+  const gradeMemory = getGradeWordMemory(state.grade);
   const roundIndex = state.roundSerial;
   state.roundSerial += 1;
 
@@ -615,7 +720,9 @@ async function startRound() {
     roundIndex,
     sessionSalt: state.sessionSalt,
     pool,
-    config
+    config,
+    seenWords: Array.from(gradeMemory.seenWords),
+    recentWords: gradeMemory.recentWords
   });
 
   state.roundIndex = round.roundIndex;
@@ -623,16 +730,33 @@ async function startRound() {
   state.roundConfig = config;
   state.roundDifficultyTier = config.difficultyTier || 0;
   state.board = round.board;
+  state.roundWordPoolMeta = {
+    gradePoolSize: pool.length,
+    recentWordReuseBlocked: false,
+    seenWordsCount: gradeMemory.seenWords.size,
+    recentWordsCount: gradeMemory.recentWords.length,
+    usedRecentWords: 0,
+    ...round.wordPoolMeta
+  };
   state.wordSequence = buildWordSequence(state.board);
   state.wordSequenceIndex = 0;
-  state.currentGoalWord = state.wordSequence[0] || null;
+  state.currentGoalWord = null;
   state.timerMaxMs = round.timerSeconds * 1000;
   state.timerMs = state.timerMaxMs;
   state.wheel.letters = round.wheelLetters.slice();
-  state.hint.remaining = config.hintBudget;
+  state.wheel.roundClearSpin = false;
+  state.wheel.spinVelocity = 0;
+  state.wheel.glow = 0;
+  state.wheel.centerPulse = 0;
+  if (roundIndex === 0) {
+    state.hint.remaining = config.hintBudget;
+  } else {
+    state.hint.remaining = Math.max(0, state.hint.remaining);
+  }
   state.hint.cooldownMs = 0;
   state.hint.revealCellKey = null;
   state.hint.revealMs = 0;
+  state.roundClearRewards = [];
   state.misses = 0;
   state.combo = 0;
   resetTrace();
@@ -648,6 +772,7 @@ async function startGrade(grade) {
     return;
   }
 
+  resetGradeWordMemory(grade);
   state.grade = grade;
   state.score = 0;
   state.streak = 0;
@@ -657,6 +782,14 @@ async function startGrade(grade) {
   state.wordSequence = [];
   state.wordSequenceIndex = 0;
   state.currentGoalWord = null;
+  state.roundWordPoolMeta = {
+    gradePoolSize: 0,
+    recentWordReuseBlocked: false,
+    seenWordsCount: 0,
+    recentWordsCount: 0,
+    usedRecentWords: 0
+  };
+  state.wheel.roundClearSpin = false;
   const oneTimeSeed = seedOverride;
   seedOverride = null;
   state.sessionSalt = Number.isFinite(oneTimeSeed) ? oneTimeSeed : randomSalt();
@@ -679,6 +812,14 @@ async function restartRound() {
   await startRound();
 }
 
+async function restartGrade() {
+  if (!state.grade) {
+    return;
+  }
+  setMode("loading");
+  await startGrade(state.grade);
+}
+
 function goHome() {
   setMode("menu");
   state.grade = null;
@@ -687,6 +828,8 @@ function goHome() {
   state.wordSequence = [];
   state.wordSequenceIndex = 0;
   state.currentGoalWord = null;
+  state.wheel.roundClearSpin = false;
+  state.wheel.spinVelocity = 0;
   resetTrace();
   ui.showMenu();
   ui.hideModal();
@@ -707,11 +850,11 @@ function onTimeout() {
 
 ui.bind({
   onPickGrade: (grade) => startGrade(grade),
-  onRestart: () => restartRound(),
+  onRestart: () => restartGrade(),
   onHome: () => goHome(),
   onUseHint: async () => {
     await audio.resume();
-    useHintWord({ auto: false });
+    useHintWord();
   },
   onToggleMute: async () => {
     await audio.resume();
@@ -768,9 +911,13 @@ const loop = createGameLoop((dtMs) => {
       state,
       area.x + sessionRng() * area.width,
       area.y + sessionRng() * area.height,
-      sessionRng() > 0.5 ? "rgba(255,255,255,0.85)" : "rgba(255,190,228,0.78)",
+      sessionRng() > 0.5 ? "rgba(255,255,255,0.85)" : "rgba(147,230,255,0.78)",
       1
     );
+  }
+
+  if (state.mode === "round-clear") {
+    emitRoundClearWheelSparkles();
   }
 
   updateEffects(state, dtMs);
@@ -835,6 +982,7 @@ window.render_game_to_text = () => renderGameToText(state);
 window.__sparky = {
   startGrade,
   restartRound,
+  restartGrade,
   toggleMute: async () => {
     await audio.resume();
     const muted = audio.toggleMuted();

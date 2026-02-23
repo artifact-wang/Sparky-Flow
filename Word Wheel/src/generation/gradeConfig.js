@@ -1,7 +1,7 @@
 const gradeConfigs = {
   1: {
     grade: 1,
-    timerSeconds: 118,
+    timerSeconds: 126,
     wheelSize: 7,
     minWordLength: 3,
     maxWordLength: 5,
@@ -16,7 +16,7 @@ const gradeConfigs = {
   },
   2: {
     grade: 2,
-    timerSeconds: 110,
+    timerSeconds: 118,
     wheelSize: 7,
     minWordLength: 3,
     maxWordLength: 6,
@@ -31,7 +31,7 @@ const gradeConfigs = {
   },
   3: {
     grade: 3,
-    timerSeconds: 102,
+    timerSeconds: 110,
     wheelSize: 8,
     minWordLength: 3,
     maxWordLength: 6,
@@ -46,7 +46,7 @@ const gradeConfigs = {
   },
   4: {
     grade: 4,
-    timerSeconds: 94,
+    timerSeconds: 102,
     wheelSize: 8,
     minWordLength: 3,
     maxWordLength: 7,
@@ -61,7 +61,7 @@ const gradeConfigs = {
   },
   5: {
     grade: 5,
-    timerSeconds: 86,
+    timerSeconds: 94,
     wheelSize: 9,
     minWordLength: 3,
     maxWordLength: 7,

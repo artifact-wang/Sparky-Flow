@@ -6,7 +6,7 @@
 
 This contains everything you need to run your app locally.
 
-View your app in AI Studio: https://ai.studio/apps/bundled/stretchy_cat
+View your app in AI Studio from your Apps dashboard.
 
 ## Run Locally
 

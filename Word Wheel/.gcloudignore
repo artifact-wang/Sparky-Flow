@@ -1,7 +1,11 @@
-# Exclude from Cloud Build context (faster uploads)
+# Exclude from Cloud Build context
 .git
 .gitignore
-node_modules
-output
+node_modules/
+output/
+scripts/
+progress.md
 *.md
-scripts
+.env
+.env.*
+.DS_Store

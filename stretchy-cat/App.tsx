@@ -35,7 +35,7 @@ interface RunStats {
   recentRuns: RunRecord[];
 }
 
-const RUN_STATS_STORAGE_KEY = 'stretchy-cat-run-stats-v1';
+const RUN_STATS_STORAGE_KEY = 'sparkli-run-stats-v1';
 const DEFAULT_RUN_STATS: RunStats = {
   bestScore: 0,
   highestLevel: 0,
@@ -531,7 +531,7 @@ const App: React.FC = () => {
     <div
       className="sparkli-app"
       onMouseUp={() => setGameState(prev => ({ ...prev, isDragging: false }))}
-      aria-label="Stretchy Cat game"
+      aria-label="Sparkli trail game"
     >
       <div className="sparkli-backdrop" aria-hidden="true">
         <div className="sparkli-orb sparkli-orb-left" />
@@ -546,7 +546,7 @@ const App: React.FC = () => {
 
       {!hasStarted && <EntryMenu stats={stats} onStart={startNewRun} onClearStats={clearStats} />}
 
-      {hasStarted && !level && <div className="sparkli-loading">Preparing your cozy room...</div>}
+      {hasStarted && !level && <div className="sparkli-loading">Preparing Sparkli route...</div>}
 
       {hasStarted && level && (
         <>
@@ -554,7 +554,7 @@ const App: React.FC = () => {
           {isInfoOpen && (
             <InfoDialog
               title="How to play"
-              goal="Drag or use arrow keys to stretch your cat through every walkable tile. Collect fish for bonus time and yarn for score boosts before they fade."
+              goal="Drag or use arrow keys to guide Sparkli through every walkable tile. Collect fish for bonus time and yarn for score boosts before they fade."
               goalNote="Backtrack by moving into your previous tile. Finish only when all required tiles are covered."
               onClose={() => setIsInfoOpen(false)}
             />
@@ -567,7 +567,7 @@ const App: React.FC = () => {
                 <SparkliWordmark className="sparkli-wordmark" />
               </div>
               <div className="sparkli-pill">Sparkli Mode</div>
-              <h1>Stretchy Cat Quest</h1>
+              <h1>Sparkli Trail Quest</h1>
               <p>Fill every tile and land on the finish saucer to clear each level.</p>
             </div>
 

@@ -165,3 +165,28 @@ Validation:
   - gameplay: `output/web-game-figma-brand/gameplay/shot-0.png`
   - extra interaction run: `output/web-game-figma-brand/gameplay-move/shot-0.png`
 - No generated `errors-*.json` in these run directories.
+
+User request pass (remove cat text + use assets/Sparkli.svg):
+- Replaced remaining user-facing cat copy with Sparkli wording:
+  - `App.tsx`: aria label, loading copy, help goal text, title (`Sparkli Trail Quest`), run stats storage key (`sparkli-run-stats-v1`).
+  - `components/GameOver.tsx`: win message now references Sparkli.
+  - `components/EntryMenu.tsx`: hero greeting now Sparkli-themed.
+  - `metadata.json`: name/description updated to Sparkli.
+  - `README.md`: removed old `stretchy_cat` AI Studio URL text.
+- Switched character rendering to the provided asset:
+  - `components/SparkliCharacter.tsx` now imports and renders `assets/Sparkli.svg`.
+  - `components/Cell.tsx`: renamed head icon component to `SparkliHeadIcon`.
+  - `index.css`: updated avatar/head selectors from `svg` to Sparkli image classes.
+- Package naming cleanup:
+  - `package.json` + `package-lock.json`: package name changed to `sparkli-trail`.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright captures:
+  - menu: `output/web-game-sparkli-svg/menu/shot-0.png` + `state-0.json`.
+  - gameplay: `output/web-game-sparkli-svg/gameplay/shot-0.png` + `state-0.json`.
+- Visual check confirms `Sparkli.svg` appears in menu avatar and active board head token.
+- No `errors-*.json` files generated under `output/web-game-sparkli-svg`.
+
+Notes:
+- Remaining `stretchycat` strings are internal audio asset path segments in `App.tsx` (`/media/audio/sfx/stretchycat/...`) kept unchanged to avoid breaking SFX path resolution.

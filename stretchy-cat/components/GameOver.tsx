@@ -24,7 +24,7 @@ const GameOver: React.FC<GameOverProps> = ({ type, score, onAction }) => {
         </div>
 
         <h2>{isWin ? 'All levels cleared!' : 'Clock ran out'}</h2>
-        <p>{isWin ? 'Your cat mastered every room.' : 'Try a cleaner route to finish faster.'}</p>
+        <p>{isWin ? 'Sparkli mastered every room.' : 'Try a cleaner route to finish faster.'}</p>
 
         <div className="sparkli-overlay-score">
           <span>Score</span>

@@ -1,0 +1,1 @@
+{"mode":"playing","coordinateSystem":"origin=(0,0) top-left, +x right, +y down","level":{"id":1,"width":4,"height":4,"targetCount":8},"player":{"pathLength":3,"head":{"x":3,"y":2}},"timers":{"timeLeft":20,"timerStarted":true,"treatActive":true,"yarnActive":true},"score":20}

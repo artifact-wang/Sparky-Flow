@@ -73,7 +73,7 @@ const EntryMenu: React.FC<EntryMenuProps> = ({ stats, onStart, onClearStats }) =
 
           <div className="sparkli-menu-copy">
             <span className="sparkli-pill">Sparkli Archive</span>
-            <h2>Welcome back, Stretch Master</h2>
+            <h2>Welcome back, Sparkli Scout</h2>
             <p>
               Plot your path, race the timer, and chase a cleaner run. Your best adventures are tracked here.
             </p>

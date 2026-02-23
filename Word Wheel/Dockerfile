@@ -1,6 +1,14 @@
-# Serve Word Wheel static site on Cloud Run
-FROM python:3.11-slim
-WORKDIR /app
-COPY . .
+# Word Wheel - static site served by nginx
+FROM nginx:alpine
+
+# Cloud Run expects PORT 8080
+RUN sed -i 's/listen\s*80;/listen 8080;/' /etc/nginx/conf.d/default.conf \
+  && sed -i 's/listen\s*\[::\]:80;/listen [::]:8080;/' /etc/nginx/conf.d/default.conf
+
+# Copy app files
+WORKDIR /usr/share/nginx/html
+COPY index.html .
+COPY src ./src
+
 EXPOSE 8080
-CMD python3 -c "import http.server, os; http.server.test(HandlerClass=http.server.SimpleHTTPRequestHandler, port=int(os.environ.get('PORT', 8080)))"
+CMD ["nginx", "-g", "daemon off;"]

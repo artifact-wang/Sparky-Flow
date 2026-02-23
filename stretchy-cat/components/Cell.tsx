@@ -102,7 +102,7 @@ const ObstacleIcon: React.FC<{ type: CellType }> = ({ type }) => {
   );
 };
 
-const CatHeadIcon: React.FC<{ direction: 'up' | 'down' | 'left' | 'right' }> = ({ direction }) => {
+const SparkliHeadIcon: React.FC<{ direction: 'up' | 'down' | 'left' | 'right' }> = ({ direction }) => {
   const rotation = { up: 0, right: 90, down: 180, left: 270 }[direction];
 
   return (
@@ -239,7 +239,7 @@ const Cell: React.FC<CellProps> = ({
           {connections.down && <div className="sparkli-link sparkli-link-down" />}
           {connections.left && <div className="sparkli-link sparkli-link-left" />}
           {connections.right && <div className="sparkli-link sparkli-link-right" />}
-          {isHead && <CatHeadIcon direction={headDirection} />}
+          {isHead && <SparkliHeadIcon direction={headDirection} />}
           {isTail && <div className="sparkli-tail-dot" />}
         </div>
       )}

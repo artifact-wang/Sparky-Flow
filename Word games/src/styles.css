@@ -1,0 +1,336 @@
+:root {
+  --ink: #252b37;
+  --ink-soft: #525969;
+  --bg-top: #ffe8f6;
+  --bg-bottom: #f3d3ff;
+  --card: #fff6ff;
+  --card-alt: #ffffff;
+  --accent: #ff4fa3;
+  --accent-soft: #ffd1ea;
+  --primary: #31b8ff;
+  --primary-dark: #0f95dd;
+  --shadow: rgba(20, 24, 35, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Baloo 2", "Trebuchet MS", "Avenir Next", sans-serif;
+  touch-action: none;
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  color: var(--ink);
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#top-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  height: 108px;
+  padding: 12px 20px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(90deg, rgba(255, 249, 238, 0.72), rgba(250, 222, 255, 0.72));
+  border-bottom: 3px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(3px);
+}
+
+#top-hud.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hud-left,
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spark-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #2d3140;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  box-shadow: 0 5px 0 var(--shadow);
+  animation: sparky-bob 2.4s ease-in-out infinite;
+}
+
+.hud-center {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timer-shell {
+  width: 100%;
+  height: 22px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(211, 223, 236, 0.7);
+  border: 3px solid rgba(255, 255, 255, 0.7);
+}
+
+#timer-fill {
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  transform: scaleX(1);
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  transition: transform 0.14s linear;
+}
+
+.stats-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill,
+.chip,
+.hud-btn,
+.grade-card,
+.menu-card,
+.modal-card {
+  border: 3px solid #2d3140;
+  box-shadow: 0 5px 0 var(--shadow);
+}
+
+.pill,
+.chip {
+  border-radius: 16px;
+  background: #fff;
+  padding: 6px 12px;
+  font-size: 21px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.chip {
+  font-size: 20px;
+}
+
+.hint-chip {
+  cursor: pointer;
+  font-family: inherit;
+  appearance: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hint-chip:not(:disabled) {
+  background: linear-gradient(180deg, #fffde7, #ffefb0);
+  border-color: #e6a44f;
+  box-shadow: 0 5px 0 rgba(123, 78, 24, 0.25);
+  animation: hint-pop 2.2s ease-in-out infinite;
+}
+
+.hint-chip:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 rgba(123, 78, 24, 0.24);
+}
+
+.hint-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+#goal-value {
+  color: var(--accent);
+  margin-left: 4px;
+}
+
+.hud-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.hud-btn:active,
+.grade-card:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--shadow);
+}
+
+#game-root,
+#game-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  background: rgba(255, 241, 250, 0.68);
+  backdrop-filter: blur(3px);
+}
+
+.overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-card,
+.modal-card {
+  width: min(980px, calc(100vw - 40px));
+  border-radius: 36px;
+  background: var(--card);
+  padding: 28px;
+}
+
+.menu-card h1 {
+  margin: 0;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1;
+}
+
+.menu-card p {
+  margin: 10px 0 0;
+  font-size: clamp(20px, 2.2vw, 28px);
+  color: var(--ink-soft);
+}
+
+.grade-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.grade-card {
+  border-radius: 24px;
+  background: var(--card-alt);
+  color: var(--ink);
+  min-height: 110px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.grade-card .grade-title {
+  font-size: clamp(24px, 2.3vw, 34px);
+  font-weight: 800;
+}
+
+.grade-card .grade-meta {
+  font-size: clamp(14px, 1.4vw, 18px);
+  color: var(--ink-soft);
+}
+
+.grade-card.tiny {
+  min-height: auto;
+  text-align: center;
+  justify-content: center;
+}
+
+.menu-footnote {
+  margin-top: 14px;
+  font-size: clamp(16px, 1.6vw, 20px);
+}
+
+.modal-card {
+  width: min(640px, calc(100vw - 44px));
+  text-align: center;
+  background: #fff9ff;
+}
+
+.modal-card h2 {
+  margin: 0;
+  font-size: clamp(34px, 4vw, 52px);
+}
+
+.modal-card p {
+  margin-top: 10px;
+  font-size: clamp(20px, 2.1vw, 28px);
+  color: var(--ink-soft);
+}
+
+.modal-actions {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  #top-hud {
+    gap: 10px;
+    height: 114px;
+    padding: 10px;
+  }
+
+  .pill,
+  .chip {
+    font-size: 18px;
+    padding: 4px 8px;
+  }
+
+  .spark-badge,
+  .hud-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .grade-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@keyframes hint-pop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-1px) scale(1.03);
+  }
+  75% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sparky-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

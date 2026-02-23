@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Sparky Word Sprint</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="top-hud">
+        <div class="hud-left">
+          <div class="spark-badge">💧</div>
+          <div class="pill">⭐ <span id="stars-value">0</span></div>
+          <div class="pill">Round <span id="round-value">1</span></div>
+        </div>
+        <div class="hud-center">
+          <div class="timer-shell">
+            <div id="timer-fill"></div>
+          </div>
+          <div class="stats-row">
+            <div class="chip" id="grade-label">Grade -</div>
+            <div class="chip">Goal <span id="goal-value">-</span></div>
+            <div class="chip">Score <span id="score-value">0</span></div>
+            <div class="chip">Streak <span id="streak-value">0</span></div>
+            <button class="chip hint-chip" id="hint-chip" aria-label="Use Hint">Hint <span id="hint-value">0</span></button>
+          </div>
+        </div>
+        <div class="hud-right">
+          <button id="btn-mute" class="hud-btn" aria-label="Mute">🔊</button>
+          <button id="btn-restart" class="hud-btn" aria-label="Restart">↺</button>
+          <button id="btn-home" class="hud-btn" aria-label="Home">✕</button>
+        </div>
+      </header>
+
+      <main id="game-root">
+        <canvas id="game-canvas" aria-label="Sparky Word Sprint Game"></canvas>
+      </main>
+
+      <section id="grade-menu" class="overlay">
+        <div class="menu-card">
+          <h1>Sparky Word Sprint</h1>
+          <p>Pick your grade world and drag letters to power up Spark streaks.</p>
+          <div class="grade-grid">
+            <button class="grade-card" data-grade="1">
+              <span class="grade-title">Grade 1</span>
+              <span class="grade-meta" data-grade-stats="1">No rounds yet</span>
+            </button>
+            <button class="grade-card" data-grade="2">
+              <span class="grade-title">Grade 2</span>
+              <span class="grade-meta" data-grade-stats="2">No rounds yet</span>
+            </button>
+            <button class="grade-card" data-grade="3">
+              <span class="grade-title">Grade 3</span>
+              <span class="grade-meta" data-grade-stats="3">No rounds yet</span>
+            </button>
+            <button class="grade-card" data-grade="4">
+              <span class="grade-title">Grade 4</span>
+              <span class="grade-meta" data-grade-stats="4">No rounds yet</span>
+            </button>
+            <button class="grade-card" data-grade="5">
+              <span class="grade-title">Grade 5</span>
+              <span class="grade-meta" data-grade-stats="5">No rounds yet</span>
+            </button>
+          </div>
+          <p class="menu-footnote">Tip: swipe over letters to form words and complete the board before time runs out.</p>
+        </div>
+      </section>
+
+      <section id="modal" class="overlay hidden" aria-live="polite">
+        <div class="modal-card">
+          <h2 id="modal-title">Round Complete</h2>
+          <p id="modal-body">Great work.</p>
+          <div class="modal-actions">
+            <button id="modal-primary" class="grade-card tiny">Next Round</button>
+            <button id="modal-secondary" class="grade-card tiny">Home</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

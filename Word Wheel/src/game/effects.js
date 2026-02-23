@@ -24,7 +24,12 @@ export function pushTrailPoint(state, x, y, options = {}) {
     maxLife = 3400,
     lift = -12,
     spinRange = 8,
-    trailCap = MAX_TRAIL_POINTS
+    trailCap = MAX_TRAIL_POINTS,
+    hueMin = 0,
+    hueMax = 359,
+    saturation = 90,
+    lightness = 70,
+    alphaBoost = 1
   } = options;
 
   const minBurst = Math.max(1, Math.floor(burstMin));
@@ -36,13 +41,17 @@ export function pushTrailPoint(state, x, y, options = {}) {
     const speed = speedMin + Math.random() * Math.max(0, speedMax - speedMin);
     const size = sizeMin + Math.random() * Math.max(0, sizeMax - sizeMin);
     const life = lifeMin + Math.random() * Math.max(0, lifeMax - lifeMin);
+    const hue = hueMin + Math.random() * Math.max(0, hueMax - hueMin);
     state.effects.trail.push({
       x,
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed + lift,
       size,
-      hue: Math.floor(Math.random() * 360),
+      hue: Math.floor(hue),
+      saturation,
+      lightness,
+      alphaBoost,
       spin: (Math.random() - 0.5) * spinRange,
       rot: Math.random() * Math.PI * 2,
       life,

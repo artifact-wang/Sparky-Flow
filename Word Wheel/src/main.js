@@ -311,9 +311,58 @@ function showRoundClearModal(starGain, rewardItems = []) {
   });
 }
 
+function buildHintRewardSummary(rewardItems) {
+  if (!Array.isArray(rewardItems) || !rewardItems.length) {
+    return "No bonus hints this time.";
+  }
+  const labels = rewardItems.map((reward) => `${reward.title}: +${reward.hints} hint${reward.hints === 1 ? "" : "s"}`);
+  return labels.join(" • ");
+}
+
+function revealTimeoutAnswers() {
+  if (!state.board || !Array.isArray(state.board.words)) {
+    return [];
+  }
+
+  state.board.revealAllAnswers = true;
+  return state.board.words.filter((word) => !word.solved).map((word) => word.text.toUpperCase());
+}
+
+function showRoundPreview({ type, title, body, payload = {} }) {
+  state.pendingRoundPanel = {
+    type,
+    ...payload
+  };
+  ui.showRoundPreview({
+    title,
+    body,
+    nextLabel: "Next"
+  });
+}
+
 function saveProgress() {
   persistSaveState(state.saveState);
   syncHud();
+}
+
+function openPendingRoundPanel() {
+  if (!state.pendingRoundPanel) {
+    return;
+  }
+
+  const pending = state.pendingRoundPanel;
+  state.pendingRoundPanel = null;
+  ui.hideRoundPreview();
+
+  if (pending.type === "round-clear") {
+    showRoundClearModal(pending.starGain, pending.rewardItems || []);
+    return;
+  }
+
+  if (pending.type === "timeout") {
+    setMode("timeout");
+    showTimeoutModal();
+  }
 }
 
 function animateSolvedWordCells(word, revealKind = "solve") {
@@ -512,7 +561,15 @@ function solveWord(wordId, options = {}) {
     state.wheel.glow = Math.max(1.2, state.wheel.glow);
     setMode("round-clear");
     audio.playRoundClear();
-    showRoundClearModal(starGain, rewardItems);
+    showRoundPreview({
+      type: "round-clear",
+      title: "Round Cleared!",
+      body: buildHintRewardSummary(rewardItems),
+      payload: {
+        starGain,
+        rewardItems
+      }
+    });
   }
 }
 
@@ -598,6 +655,39 @@ function emitRoundClearWheelSparkles() {
     if (sessionRng() > 0.38) {
       const hue = Math.floor(sessionRng() * 360);
       spawnParticleBurst(state, x, y, `hsla(${hue}, 94%, 68%, 0.92)`, 2 + Math.floor(sessionRng() * 2));
+    }
+  }
+
+  const centerBursts = 1 + (sessionRng() > 0.42 ? 1 : 0);
+  const centerSpreadScale = 4;
+  for (let i = 0; i < centerBursts; i += 1) {
+    const jitterX = (sessionRng() - 0.5) * 14 * centerSpreadScale;
+    const jitterY = (sessionRng() - 0.5) * 14 * centerSpreadScale;
+    const cx = layout.wheelCenter.x + jitterX;
+    const cy = layout.wheelCenter.y + jitterY;
+    pushTrailPoint(state, cx, cy, {
+      burstMin: 5,
+      burstMax: 9,
+      speedMin: 86 * centerSpreadScale,
+      speedMax: 240 * centerSpreadScale,
+      sizeMin: 8.2,
+      sizeMax: 14.8,
+      lifeMin: 1800,
+      lifeMax: 3000,
+      maxLife: 3200,
+      lift: -5,
+      spinRange: 18,
+      trailCap: 420,
+      hueMin: 0,
+      hueMax: 359,
+      saturation: 98,
+      lightness: 84,
+      alphaBoost: 1.45
+    });
+
+    if (sessionRng() > 0.12) {
+      const brightTone = sessionRng() > 0.5 ? "rgba(255, 255, 240, 0.96)" : "rgba(255, 246, 179, 0.96)";
+      spawnParticleBurst(state, cx, cy, brightTone, 4 + Math.floor(sessionRng() * 3));
     }
   }
 }
@@ -730,6 +820,7 @@ async function startRound() {
   state.roundConfig = config;
   state.roundDifficultyTier = config.difficultyTier || 0;
   state.board = round.board;
+  state.board.revealAllAnswers = false;
   state.roundWordPoolMeta = {
     gradePoolSize: pool.length,
     recentWordReuseBlocked: false,
@@ -757,10 +848,15 @@ async function startRound() {
   state.hint.revealCellKey = null;
   state.hint.revealMs = 0;
   state.roundClearRewards = [];
+  state.pendingRoundPanel = null;
   state.misses = 0;
   state.combo = 0;
+  if (state.board) {
+    state.board.revealAllAnswers = false;
+  }
   resetTrace();
 
+  ui.hideRoundPreview();
   ui.hideModal();
   state.modal = null;
   setMode("playing");
@@ -790,6 +886,7 @@ async function startGrade(grade) {
     usedRecentWords: 0
   };
   state.wheel.roundClearSpin = false;
+  state.pendingRoundPanel = null;
   const oneTimeSeed = seedOverride;
   seedOverride = null;
   state.sessionSalt = Number.isFinite(oneTimeSeed) ? oneTimeSeed : randomSalt();
@@ -830,8 +927,10 @@ function goHome() {
   state.currentGoalWord = null;
   state.wheel.roundClearSpin = false;
   state.wheel.spinVelocity = 0;
+  state.pendingRoundPanel = null;
   resetTrace();
   ui.showMenu();
+  ui.hideRoundPreview();
   ui.hideModal();
   ui.setHudVisible(false);
   updateURLGrade(null);
@@ -843,9 +942,18 @@ function onTimeout() {
     return;
   }
   state.timerMs = 0;
-  setMode("timeout");
+  setMode("timeout-preview");
   audio.playTimeout();
-  showTimeoutModal();
+  const answers = revealTimeoutAnswers();
+  const answersLabel = answers.length ? `Answers: ${answers.join(", ")}` : "Answers are shown on the board.";
+  showRoundPreview({
+    type: "timeout",
+    title: "Time Up",
+    body: answersLabel,
+    payload: {
+      answers
+    }
+  });
 }
 
 ui.bind({
@@ -861,6 +969,9 @@ ui.bind({
     const muted = audio.toggleMuted();
     state.saveState.audioMuted = muted;
     syncAudioState();
+  },
+  onRoundPreviewNext: () => {
+    openPendingRoundPanel();
   },
   onModalPrimary: async () => {
     if (!state.modal) {

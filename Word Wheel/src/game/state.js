@@ -124,6 +124,7 @@ export function createRuntimeState(saveState) {
       revealMs: 0
     },
     roundClearRewards: [],
+    pendingRoundPanel: null,
     effects: {
       particles: [],
       trail: [],

@@ -267,3 +267,31 @@ Original prompt: Build Sparky Word Sprint as an iPad touch-first webview word-wh
 
 ### TODO / Follow-up
 - If needed, add a non-canvas Playwright capture path for full DOM overlays (HUD/menu/modal) to visually diff menu/HUD changes in automated artifacts.
+
+## 2026-02-23 - Center Wheel Sparkles: Wider Random Spread + Brighter Burst
+- Tuned center-wheel round-clear sparkle emission to look more explosive and luminous.
+- `emitRoundClearWheelSparkles` now emits center bursts with:
+  - higher radial speeds
+  - larger sparkle sizes
+  - multiple jittered-origin bursts per tick for wider random spread
+  - brighter near-white/gold particle pops
+- Extended `pushTrailPoint` options with color/intensity controls (`hueMin/hueMax`, `saturation`, `lightness`, `alphaBoost`).
+- Updated trail rendering to respect per-point brightness controls so center sparkles render with stronger intensity.
+
+### Verification
+- Playwright capture:
+  - `output/web-game-20260223-center-bright-sparkles/shot-0.png`
+  - `output/web-game-20260223-center-bright-sparkles/state-0.json`
+  - Verified visible bright center burst spreading outward in random directions during round-clear spin.
+- `npm test` passed (500 rounds per grade, grades 1-5).
+
+## 2026-02-23 - Center Sparkle Spread Range x4
+- Updated round-clear center sparkle emitter spread to `4x` range while preserving fade timing behavior.
+- Applied `centerSpreadScale = 4` to center-origin jitter and radial launch speed in `emitRoundClearWheelSparkles`.
+- Kept lifetime/fade parameters unchanged to retain similar fade-out feel.
+
+### Verification
+- Playwright capture:
+  - `output/web-game-20260223-center-spread-x4/shot-0.png`
+  - `output/web-game-20260223-center-spread-x4/state-0.json`
+  - Confirmed much wider center burst coverage with the same fade style.

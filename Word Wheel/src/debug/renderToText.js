@@ -1,5 +1,6 @@
 export function renderGameToText(state) {
   const board = state.board;
+  const revealAllAnswers = Boolean(board?.revealAllAnswers);
   const totalWords = board && Array.isArray(board.words) ? board.words.length : 0;
   const solvedWords = board ? board.words.filter((word) => word.solved).map((word) => word.text) : [];
   const unsolvedWords = board ? board.words.filter((word) => !word.solved).map((word) => word.text) : [];
@@ -69,10 +70,13 @@ export function renderGameToText(state) {
           height: board.height,
           solvedWords,
           unsolvedWords,
+          revealAllAnswers,
           cells: board.cells.map((cell) => ({
             x: cell.x,
             y: cell.y,
-            visible: cell.owners.some((ownerId) => board.words[ownerId] && board.words[ownerId].solved),
+            visible:
+              revealAllAnswers ||
+              cell.owners.some((ownerId) => board.words[ownerId] && board.words[ownerId].solved),
             char: cell.char,
             owners: cell.owners
           }))
@@ -82,6 +86,11 @@ export function renderGameToText(state) {
       ? {
           type: state.modal.type,
           title: state.modal.title
+        }
+      : null,
+    roundPreview: state.pendingRoundPanel
+      ? {
+          type: state.pendingRoundPanel.type
         }
       : null
   };

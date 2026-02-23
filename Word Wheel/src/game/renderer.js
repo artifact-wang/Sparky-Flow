@@ -172,6 +172,7 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
   if (!board) {
     return;
   }
+  const revealAllAnswers = Boolean(board.revealAllAnswers);
 
   const cellSize = Math.min(
     layout.boardInner.width / Math.max(board.width + 1.4, 1),
@@ -211,6 +212,7 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
     const x = originX + cell.x * cellSize;
     const y = originY + cell.y * cellSize;
     const solved = cell.owners.some((ownerId) => board.words[ownerId] && board.words[ownerId].solved);
+    const shownByAnswer = revealAllAnswers && !solved;
     const hinted = state.hint.revealCellKey === key;
     const goalCell = goalWordId >= 0 && !solved && cell.owners.includes(goalWordId);
     const revealActive = solved && (cell.revealDelayMs || 0) <= 0 && (cell.revealMs || 0) > 0;
@@ -235,7 +237,13 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
       drawW,
       drawH,
       10,
-      solved ? "rgba(236, 255, 246, 0.96)" : goalCell ? "rgba(255, 248, 224, 0.98)" : palette.tile,
+      solved
+        ? "rgba(236, 255, 246, 0.96)"
+        : shownByAnswer
+          ? "rgba(255, 246, 228, 0.98)"
+          : goalCell
+            ? "rgba(255, 248, 224, 0.98)"
+            : palette.tile,
       palette.tileBorder,
       "rgba(17,20,29,0.18)"
     );
@@ -258,8 +266,8 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
       ctx.stroke();
     }
 
-    if (solved || hinted) {
-      ctx.fillStyle = solved ? palette.ink : palette.primaryDark;
+    if (solved || hinted || shownByAnswer) {
+      ctx.fillStyle = solved ? palette.ink : hinted ? palette.primaryDark : "#c25f3d";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = `700 ${Math.max(18, drawH * 0.55)}px \"Baloo 2\", \"Trebuchet MS\", sans-serif`;
@@ -436,16 +444,29 @@ function drawEffects(ctx, state, layout, timeMs) {
 
   state.effects.trail.forEach((point) => {
     const alpha = point.life / point.maxLife;
+    const alphaBoost = Math.max(0.6, point.alphaBoost || 1);
+    const saturation = Math.max(60, Math.min(100, point.saturation || 90));
+    const lightness = Math.max(45, Math.min(92, point.lightness || 70));
     const hue = (point.hue || 0) + timeMs * 0.08 + alpha * 80;
     const sparkleSize = (point.size || 4) * (0.85 + alpha * 0.45);
-    const color = rainbowColor(hue, Math.max(0.12, alpha * 0.95), 90, 70);
+    const color = rainbowColor(
+      hue,
+      Math.max(0.12, Math.min(1, alpha * 0.95 * alphaBoost)),
+      saturation,
+      lightness
+    );
     drawSparkle(ctx, point.x, point.y, sparkleSize, color);
     drawSparkle(
       ctx,
       point.x + Math.cos((point.rot || 0) * 1.3) * 2.2,
       point.y + Math.sin((point.rot || 0) * 1.1) * 2.2,
       sparkleSize * 0.62,
-      rainbowColor(hue + 64, Math.max(0.08, alpha * 0.72), 94, 76)
+      rainbowColor(
+        hue + 64,
+        Math.max(0.08, Math.min(1, alpha * 0.72 * alphaBoost)),
+        Math.min(100, saturation + 4),
+        Math.min(92, lightness + 8)
+      )
     );
   });
 

@@ -6,6 +6,7 @@ export function createUIOverlay(root = document) {
   const hud = root.getElementById("top-hud");
   const menu = root.getElementById("grade-menu");
   const modal = root.getElementById("modal");
+  const roundPreview = root.getElementById("round-preview");
 
   const gradeLabel = root.getElementById("grade-label");
   const goalValue = root.getElementById("goal-value");
@@ -30,12 +31,17 @@ export function createUIOverlay(root = document) {
   const modalPrimary = root.getElementById("modal-primary");
   const modalSecondary = root.getElementById("modal-secondary");
 
+  const roundPreviewTitle = root.getElementById("round-preview-title");
+  const roundPreviewBody = root.getElementById("round-preview-body");
+  const roundPreviewNext = root.getElementById("round-preview-next");
+
   const handlers = {
     onPickGrade: () => {},
     onRestart: () => {},
     onHome: () => {},
     onUseHint: () => {},
     onToggleMute: () => {},
+    onRoundPreviewNext: () => {},
     onModalPrimary: () => {},
     onModalSecondary: () => {}
   };
@@ -53,6 +59,9 @@ export function createUIOverlay(root = document) {
 
   modalPrimary.addEventListener("click", () => handlers.onModalPrimary());
   modalSecondary.addEventListener("click", () => handlers.onModalSecondary());
+  if (roundPreviewNext) {
+    roundPreviewNext.addEventListener("click", () => handlers.onRoundPreviewNext());
+  }
 
   function bind(nextHandlers) {
     Object.assign(handlers, nextHandlers);
@@ -88,6 +97,7 @@ export function createUIOverlay(root = document) {
 
   function showMenu() {
     menu.classList.remove("hidden");
+    roundPreview.classList.add("hidden");
     modal.classList.add("hidden");
   }
 
@@ -159,6 +169,29 @@ export function createUIOverlay(root = document) {
     modal.classList.add("hidden");
   }
 
+  function showRoundPreview({ title, body, nextLabel = "Next" }) {
+    if (!roundPreview) {
+      return;
+    }
+    if (roundPreviewTitle) {
+      roundPreviewTitle.textContent = title;
+    }
+    if (roundPreviewBody) {
+      roundPreviewBody.textContent = body;
+    }
+    if (roundPreviewNext) {
+      roundPreviewNext.textContent = nextLabel;
+    }
+    roundPreview.classList.remove("hidden");
+  }
+
+  function hideRoundPreview() {
+    if (!roundPreview) {
+      return;
+    }
+    roundPreview.classList.add("hidden");
+  }
+
   return {
     bind,
     updateHud,
@@ -167,6 +200,8 @@ export function createUIOverlay(root = document) {
     hideMenu,
     setHudVisible,
     updateGradeCards,
+    showRoundPreview,
+    hideRoundPreview,
     showModal,
     hideModal
   };

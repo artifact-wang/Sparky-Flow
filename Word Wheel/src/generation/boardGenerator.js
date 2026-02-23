@@ -170,27 +170,69 @@ function normalizeBoard(cells, placements) {
   };
 }
 
-function pickWheelLetters(pool, config, rng) {
+function pickBiasWeightedEntry(entries, rng, usageMap) {
+  if (!entries.length) {
+    return null;
+  }
+
+  const sampleSize = Math.min(10, entries.length);
+  let bestEntry = null;
+  let bestScore = -Infinity;
+
+  for (let i = 0; i < sampleSize; i += 1) {
+    const idx = randomInt(rng, 0, entries.length - 1);
+    const entry = entries[idx];
+    const usageCount = usageMap.get(entry.word) || 0;
+    const score = entry.word.length * 2 - usageCount * 5 + rng() * 1.5;
+    if (score > bestScore) {
+      bestScore = score;
+      bestEntry = entry;
+    }
+  }
+
+  return bestEntry || pickOne(rng, entries);
+}
+
+function pickWheelLetters(pool, config, rng, freshness = {}) {
   const allowedMaxLen = Math.min(config.maxWordLength, config.wheelSize);
+  const seenSet = freshness.seenSet || new Set();
+  const recentSet = freshness.recentSet || new Set();
+  const usageMap = normalizeUsageMap(freshness.usageMap);
   const candidates = pool.filter(
     (entry) => entry.word.length >= config.minWordLength && entry.word.length <= allowedMaxLen
   );
+  const unseenCandidates = candidates.filter((entry) => !seenSet.has(entry.word));
+  const nonRecentCandidates = candidates.filter((entry) => !recentSet.has(entry.word));
   const requiredBuildable = Math.max(config.minBoardWords, Math.ceil(config.targetWords * 0.75));
 
   for (let attempt = 0; attempt < 500; attempt += 1) {
-    const base = pickOne(rng, candidates);
+    let basePool = candidates;
+    if (unseenCandidates.length && attempt < 260) {
+      basePool = unseenCandidates;
+    } else if (nonRecentCandidates.length && attempt < 380) {
+      basePool = nonRecentCandidates;
+    }
+
+    const base = pickBiasWeightedEntry(basePool, rng, usageMap);
     if (!base) {
       break;
     }
 
     const letterCounts = countLetters(base.word);
-    const helpers = shuffleInPlace(
-      candidates.filter((entry) => entry.word !== base.word && overlapCount(entry.word, base.word) > 0),
-      rng
+    const helpers = shuffleInPlace(candidates, rng).filter(
+      (entry) => entry.word !== base.word && overlapCount(entry.word, base.word) > 0
     );
 
     for (let i = 0; i < helpers.length && expandCounts(letterCounts).length < config.wheelSize; i += 1) {
-      const helperWord = helpers[i].word;
+      const helper = helpers[i];
+      const helperWord = helper.word;
+      if (recentSet.has(helperWord) && rng() < 0.72) {
+        continue;
+      }
+      if (seenSet.has(helperWord) && rng() < 0.3) {
+        continue;
+      }
+
       for (let j = 0; j < helperWord.length && expandCounts(letterCounts).length < config.wheelSize; j += 1) {
         const letter = helperWord[j];
         if ((letterCounts[letter] || 0) >= config.maxLetterRepeat) {
@@ -233,17 +275,73 @@ function pickWheelLetters(pool, config, rng) {
   return null;
 }
 
-function scoreWordSelection(word, selected, rng, seenSet, recentSet) {
-  if (!selected.length) {
-    const firstUnseenBonus = seenSet.has(word) ? 0 : 12;
-    const firstRecentPenalty = recentSet.has(word) ? 16 : 0;
-    return word.length * 8 + firstUnseenBonus - firstRecentPenalty + rng() * 2;
+function normalizeUsageMap(wordUsage = {}) {
+  const usageMap = new Map();
+  if (wordUsage instanceof Map) {
+    wordUsage.forEach((count, rawWord) => {
+      const word = normalizeWord(rawWord);
+      if (!word) {
+        return;
+      }
+      const safeCount = Number.isFinite(Number(count)) ? Math.max(0, Math.floor(Number(count))) : 0;
+      usageMap.set(word, safeCount);
+    });
+    return usageMap;
   }
 
-  const overlaps = selected.reduce((sum, current) => sum + overlapCount(word, current), 0);
-  const unseenBonus = seenSet.has(word) ? 0 : 10;
-  const recentPenalty = recentSet.has(word) ? 14 : 0;
-  return word.length * 5 + overlaps * 4 + unseenBonus - recentPenalty + rng() * 1.5;
+  if (!wordUsage || typeof wordUsage !== "object") {
+    return usageMap;
+  }
+
+  Object.entries(wordUsage).forEach(([rawWord, count]) => {
+    const word = normalizeWord(rawWord);
+    if (!word) {
+      return;
+    }
+    const safeCount = Number.isFinite(Number(count)) ? Math.max(0, Math.floor(Number(count))) : 0;
+    usageMap.set(word, safeCount);
+  });
+
+  return usageMap;
+}
+
+function getFreshnessTier(word, seenSet, recentSet) {
+  if (!seenSet.has(word)) {
+    return 0; // unseen
+  }
+  if (!recentSet.has(word)) {
+    return 1; // seen but not recent
+  }
+  return 2; // recent reuse
+}
+
+function scoreTierCandidate(word, selectedWords, source, usageMap, rng) {
+  const selectedSet = new Set(selectedWords);
+  const overlapsToSelected = selectedWords.reduce((sum, current) => sum + overlapCount(word, current), 0);
+  const futureCrosses = source.reduce((sum, entry) => {
+    if (entry.word === word || selectedSet.has(entry.word)) {
+      return sum;
+    }
+    return sum + (overlapCount(word, entry.word) > 0 ? 1 : 0);
+  }, 0);
+  const usageCount = usageMap.get(word) || 0;
+
+  return overlapsToSelected * 9 + futureCrosses * 3 + word.length * 2 - usageCount * 11 + rng();
+}
+
+function pickBestTierCandidate(entries, selectedWords, source, usageMap, rng) {
+  let bestWord = entries[0].word;
+  let bestScore = -Infinity;
+
+  entries.forEach((entry) => {
+    const score = scoreTierCandidate(entry.word, selectedWords, source, usageMap, rng);
+    if (score > bestScore) {
+      bestScore = score;
+      bestWord = entry.word;
+    }
+  });
+
+  return bestWord;
 }
 
 function selectBoardWords(buildable, config, rng, freshness = {}) {
@@ -252,36 +350,61 @@ function selectBoardWords(buildable, config, rng, freshness = {}) {
   const targetCount = Math.min(config.targetWords, source.length);
   const seenSet = freshness.seenSet || new Set();
   const recentSet = freshness.recentSet || new Set();
+  const usageMap = normalizeUsageMap(freshness.usageMap);
   let recentWordReuseBlocked = false;
+  let freshnessFallbackUsed = false;
+  let freshWordsUsed = 0;
+  let reusedWordsUsed = 0;
+  let recentWordsUsed = 0;
 
   while (selected.length < targetCount && source.length) {
-    const candidates =
+    const crossableCandidates =
       selected.length === 0
         ? source
         : source.filter((entry) => selected.some((word) => overlapCount(entry.word, word) > 0));
 
-    if (!candidates.length) {
+    if (!crossableCandidates.length) {
       break;
     }
 
-    const nonRecentCandidates = candidates.filter((entry) => !recentSet.has(entry.word));
-    const useNonRecentCandidates = recentSet.size > 0 && nonRecentCandidates.length > 0;
-    const rankedCandidates = useNonRecentCandidates ? nonRecentCandidates : candidates;
-    if (useNonRecentCandidates) {
+    const tiers = [[], [], []];
+    crossableCandidates.forEach((entry) => {
+      const tier = getFreshnessTier(entry.word, seenSet, recentSet);
+      tiers[tier].push(entry);
+    });
+
+    let selectedTier = -1;
+    for (let tier = 0; tier < tiers.length; tier += 1) {
+      if (tiers[tier].length) {
+        selectedTier = tier;
+        break;
+      }
+    }
+
+    if (selectedTier < 0) {
+      break;
+    }
+
+    if (tiers[2].length > 0 && selectedTier < 2) {
       recentWordReuseBlocked = true;
     }
 
-    let bestWord = rankedCandidates[0].word;
-    let bestScore = -Infinity;
-    rankedCandidates.forEach((entry) => {
-      const score = scoreWordSelection(entry.word, selected, rng, seenSet, recentSet);
-      if (score > bestScore) {
-        bestScore = score;
-        bestWord = entry.word;
-      }
-    });
+    if (selectedTier > 0) {
+      freshnessFallbackUsed = true;
+    }
+
+    const bestWord = pickBestTierCandidate(tiers[selectedTier], selected, source, usageMap, rng);
 
     selected.push(bestWord);
+    if (selectedTier === 0) {
+      freshWordsUsed += 1;
+    } else {
+      reusedWordsUsed += 1;
+      if (selectedTier === 2) {
+        recentWordsUsed += 1;
+      }
+    }
+
     const removeAt = source.findIndex((entry) => entry.word === bestWord);
     if (removeAt >= 0) {
       source.splice(removeAt, 1);
@@ -290,8 +413,121 @@ function selectBoardWords(buildable, config, rng, freshness = {}) {
 
   return {
     selectedWords: selected,
-    recentWordReuseBlocked
+    recentWordReuseBlocked,
+    freshnessFallbackUsed,
+    freshWordsUsed,
+    reusedWordsUsed,
+    recentWordsUsed
   };
+}
+
+function hasConnectedComponentAtLeast(entries, minSize) {
+  if (minSize <= 1) {
+    return entries.length > 0;
+  }
+  if (!entries.length || entries.length < minSize) {
+    return false;
+  }
+
+  const words = entries.map((entry) => entry.word);
+  const adjacency = new Map();
+  words.forEach((word) => adjacency.set(word, new Set()));
+
+  for (let i = 0; i < words.length; i += 1) {
+    for (let j = i + 1; j < words.length; j += 1) {
+      if (overlapCount(words[i], words[j]) <= 0) {
+        continue;
+      }
+      adjacency.get(words[i]).add(words[j]);
+      adjacency.get(words[j]).add(words[i]);
+    }
+  }
+
+  const visited = new Set();
+  for (let i = 0; i < words.length; i += 1) {
+    const start = words[i];
+    if (visited.has(start)) {
+      continue;
+    }
+
+    let componentSize = 0;
+    const stack = [start];
+    visited.add(start);
+
+    while (stack.length) {
+      const current = stack.pop();
+      componentSize += 1;
+      if (componentSize >= minSize) {
+        return true;
+      }
+      adjacency.get(current).forEach((next) => {
+        if (visited.has(next)) {
+          return;
+        }
+        visited.add(next);
+        stack.push(next);
+      });
+    }
+  }
+
+  return false;
+}
+
+function summarizeWordFreshness(words, seenSet, recentSet, usageMap) {
+  let freshWordsUsed = 0;
+  let reusedWordsUsed = 0;
+  let recentWordsUsed = 0;
+  let totalWordUsageInBoard = 0;
+  let maxWordUsageInBoard = 0;
+
+  words.forEach((word) => {
+    const usage = usageMap.get(word) || 0;
+    totalWordUsageInBoard += usage;
+    maxWordUsageInBoard = Math.max(maxWordUsageInBoard, usage);
+    if (!seenSet.has(word)) {
+      freshWordsUsed += 1;
+      return;
+    }
+    reusedWordsUsed += 1;
+    if (recentSet.has(word)) {
+      recentWordsUsed += 1;
+    }
+  });
+
+  return {
+    boardWordCount: words.length,
+    freshWordsUsed,
+    reusedWordsUsed,
+    recentWordsUsed,
+    usedRecentWords: recentWordsUsed,
+    totalWordUsageInBoard,
+    maxWordUsageInBoard
+  };
+}
+
+function isFreshnessBetter(nextSummary, bestSummary) {
+  if (!bestSummary) {
+    return true;
+  }
+  if (nextSummary.freshWordsUsed !== bestSummary.freshWordsUsed) {
+    return nextSummary.freshWordsUsed > bestSummary.freshWordsUsed;
+  }
+  if (nextSummary.reusedWordsUsed !== bestSummary.reusedWordsUsed) {
+    return nextSummary.reusedWordsUsed < bestSummary.reusedWordsUsed;
+  }
+  if (nextSummary.recentWordsUsed !== bestSummary.recentWordsUsed) {
+    return nextSummary.recentWordsUsed < bestSummary.recentWordsUsed;
+  }
+  if (nextSummary.maxWordUsageInBoard !== bestSummary.maxWordUsageInBoard) {
+    return nextSummary.maxWordUsageInBoard < bestSummary.maxWordUsageInBoard;
+  }
+  if (nextSummary.totalWordUsageInBoard !== bestSummary.totalWordUsageInBoard) {
+    return nextSummary.totalWordUsageInBoard < bestSummary.totalWordUsageInBoard;
+  }
+  if (nextSummary.boardWordCount !== bestSummary.boardWordCount) {
+    return nextSummary.boardWordCount > bestSummary.boardWordCount;
+  }
+  return false;
 }
 
 function buildCrossword(words, minWords, rng) {
@@ -330,11 +566,17 @@ export function generateRound({
   pool,
   config,
   seenWords = [],
-  recentWords = []
+  recentWords = [],
+  wordUsage = {}
 }) {
   const seedBase = `${grade}-${roundIndex}-${sessionSalt}`;
   const seenSet = new Set(seenWords.map((word) => normalizeWord(word)).filter(Boolean));
   const recentSet = new Set(recentWords.map((word) => normalizeWord(word)).filter(Boolean));
+  const usageMap = normalizeUsageMap(wordUsage);
+  let bestRound = null;
+  let bestFreshnessSummary = null;
+  let firstValidAttempt = -1;
+  const improvementWindow = 24;
 
   for (let attempt = 0; attempt < 500; attempt += 1) {
     const seed = `${seedBase}-${attempt}`;
@@ -347,14 +589,23 @@ export function generateRound({
       minBoardWords: Math.max(3, config.minBoardWords - relaxLevel)
     };
 
-    const wheel = pickWheelLetters(pool, runtimeConfig, rng);
+    const wheel = pickWheelLetters(pool, runtimeConfig, rng, {
+      seenSet,
+      recentSet,
+      usageMap
+    });
     if (!wheel) {
       continue;
     }
 
-    const selection = selectBoardWords(wheel.buildable, runtimeConfig, rng, {
+    const freshBuildable = wheel.buildable.filter((entry) => !seenSet.has(entry.word));
+    const freshCrosswordAvailable = hasConnectedComponentAtLeast(freshBuildable, runtimeConfig.minBoardWords);
+    const selectionSource = freshCrosswordAvailable ? freshBuildable : wheel.buildable;
+
+    const selection = selectBoardWords(selectionSource, runtimeConfig, rng, {
       seenSet,
-      recentSet
+      recentSet,
+      usageMap
     });
     const selectedWords = selection.selectedWords;
     if (selectedWords.length < runtimeConfig.minBoardWords) {
@@ -365,13 +616,15 @@ export function generateRound({
     if (!board) {
       continue;
     }
+    const boardWords = board.words.map((word) => normalizeWord(word.text));
+    const freshnessSummary = summarizeWordFreshness(boardWords, seenSet, recentSet, usageMap);
 
     const wordLookup = {};
     board.words.forEach((word) => {
       wordLookup[word.text] = word.id;
     });
 
-    return {
+    const candidateRound = {
       seed,
       grade,
       roundIndex,
@@ -383,11 +636,43 @@ export function generateRound({
       wordPoolMeta: {
         gradePoolSize: pool.length,
         recentWordReuseBlocked: selection.recentWordReuseBlocked,
-        usedRecentWords: selectedWords.filter((word) => recentSet.has(word)).length,
+        freshCrosswordAvailable,
+        freshnessFallbackUsed: selection.freshnessFallbackUsed,
+        freshWordsUsed: freshnessSummary.freshWordsUsed,
+        reusedWordsUsed: freshnessSummary.reusedWordsUsed,
+        recentWordsUsed: freshnessSummary.recentWordsUsed,
+        usedRecentWords: freshnessSummary.usedRecentWords,
+        maxWordUsageInBoard: freshnessSummary.maxWordUsageInBoard,
+        totalWordUsageInBoard: freshnessSummary.totalWordUsageInBoard,
+        boardWordCount: freshnessSummary.boardWordCount,
         seenWordsCount: seenSet.size,
         recentWordsCount: recentSet.size
       }
     };
+
+    if (isFreshnessBetter(freshnessSummary, bestFreshnessSummary)) {
+      bestFreshnessSummary = freshnessSummary;
+      bestRound = candidateRound;
+    }
+
+    const perfectFreshRound =
+      freshnessSummary.reusedWordsUsed === 0 && freshnessSummary.recentWordsUsed === 0;
+    if (perfectFreshRound) {
+      return candidateRound;
+    }
+
+    if (firstValidAttempt < 0) {
+      firstValidAttempt = attempt;
+      continue;
+    }
+
+    if (attempt - firstValidAttempt >= improvementWindow && bestRound) {
+      return bestRound;
+    }
+  }
+
+  if (bestRound) {
+    return bestRound;
   }
 
   throw new Error(`Failed to generate round for grade ${grade}`);

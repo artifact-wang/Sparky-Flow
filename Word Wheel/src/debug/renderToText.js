@@ -55,6 +55,14 @@ export function renderGameToText(state) {
     wordPool: {
       gradePoolSize: state.roundWordPoolMeta?.gradePoolSize || 0,
       recentWordReuseBlocked: Boolean(state.roundWordPoolMeta?.recentWordReuseBlocked),
+      freshCrosswordAvailable: Boolean(state.roundWordPoolMeta?.freshCrosswordAvailable),
+      freshnessFallbackUsed: Boolean(state.roundWordPoolMeta?.freshnessFallbackUsed),
+      freshWordsUsed: state.roundWordPoolMeta?.freshWordsUsed || 0,
+      reusedWordsUsed: state.roundWordPoolMeta?.reusedWordsUsed || 0,
+      recentWordsUsed: state.roundWordPoolMeta?.recentWordsUsed || 0,
+      boardWordCount: state.roundWordPoolMeta?.boardWordCount || 0,
+      maxWordUsageInBoard: state.roundWordPoolMeta?.maxWordUsageInBoard || 0,
+      totalWordUsageInBoard: state.roundWordPoolMeta?.totalWordUsageInBoard || 0,
       recentWordsCount: state.roundWordPoolMeta?.recentWordsCount || 0,
       seenWordsCount: state.roundWordPoolMeta?.seenWordsCount || 0,
       usedRecentWords: state.roundWordPoolMeta?.usedRecentWords || 0

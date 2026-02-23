@@ -295,3 +295,76 @@ Original prompt: Build Sparky Word Sprint as an iPad touch-first webview word-wh
   - `output/web-game-20260223-center-spread-x4/shot-0.png`
   - `output/web-game-20260223-center-spread-x4/state-0.json`
   - Confirmed much wider center burst coverage with the same fade style.
+
+## 2026-02-23 - Fresh-First Crossword Selection Rewrite (Anti-Repetition)
+- Reworked board word selection in `src/generation/boardGenerator.js` to use strict freshness tiers:
+  - Tier 1: unseen words
+  - Tier 2: seen but not recent
+  - Tier 3: recent words
+- Added hard fallback behavior:
+  - Selection now only drops to a lower tier when no crossable candidate exists in the current tier.
+- Added connected-component freshness gating:
+  - Generator now checks whether unseen buildable words can form a connected crossword cluster of at least `minBoardWords`.
+  - If yes, selection is forced to fresh-only candidates for that attempt.
+  - Reuse is only considered when a fresh connected cluster is unavailable for that wheel.
+- Added usage balancing to reduce overrepresented words:
+  - Grade memory now tracks per-word usage counts (`wordUseCounts`).
+  - Generation receives `wordUsage` and penalizes high-usage candidates within the active freshness tier.
+- Extended debug metadata (`wordPool`) with:
+  - `freshCrosswordAvailable`
+  - `freshnessFallbackUsed`
+  - `freshWordsUsed`
+  - `reusedWordsUsed`
+  - `recentWordsUsed`
+  - `maxWordUsageInBoard`
+
+### Verification
+- `npm test` passed (500 generated rounds per grade, 1-5).
+- Playwright runtime capture:
+  - `output/web-game-freshness-pass3/shot-1.png`
+  - `output/web-game-freshness-pass3/state-1.json`
+  - Confirmed active gameplay board renders correctly and debug payload includes new freshness metadata.
+- Console error artifact file was not generated for this run.
+- Additional generator probe (40 rounds, grade 1, deterministic salt):
+  - `fallbackWhenFreshPossible: 0` (reuse never happened when a fresh connected crossword set was available).
+
+## 2026-02-23 - Cumulative Grade Pools (100/200/300/400/500) + Stronger Anti-Repeat Logic
+- Rebuilt grade data files as cumulative sets with strict inclusion and no duplicates:
+  - `src/data/grade1.json`: 100 words
+  - `src/data/grade2.json`: 200 words (includes grade1)
+  - `src/data/grade3.json`: 300 words (includes grade2)
+  - `src/data/grade4.json`: 400 words (includes grade3)
+  - `src/data/grade5.json`: 500 words (includes grade4)
+- Added additional common words to reach the requested grade5 target while keeping entries normalized (`[a-z]+`).
+- Verified cumulative + dedupe constraints:
+  - `cumulative-no-dup-check: pass`
+
+- Strengthened generation anti-repeat logic in `src/generation/boardGenerator.js`:
+  - Added freshness-aware wheel base selection (`pickBiasWeightedEntry`) using seen/recent/usage memory.
+  - Biased helper-word assembly away from recent and previously seen words.
+  - Added board-level freshness scoring (`summarizeWordFreshness`) based on words actually placed on the board.
+  - Stopped accepting the first valid attempt blindly; now the generator keeps the freshest valid candidate in a short improvement window and returns early only on a perfect fresh board.
+  - Added additional metadata fields:
+    - `totalWordUsageInBoard`
+    - `boardWordCount`
+
+### Verification
+- `npm test` passed (500 generated rounds per grade, 1-5) with new pool sizes:
+  - grade1 `poolSize: 100`
+  - grade2 `poolSize: 200`
+  - grade3 `poolSize: 300`
+  - grade4 `poolSize: 400`
+  - grade5 `poolSize: 500`
+- Playwright runtime capture:
+  - `output/web-game-repeat-hardening-20260223/shot-1.png`
+  - `output/web-game-repeat-hardening-20260223/state-1.json`
+  - Confirmed game runs normally and shows `wordPool.gradePoolSize: 500` for grade5.
+  - No console error artifact file generated.
+
+### Repeat-Rate Probe (120 rounds, deterministic session salt)
+- Before this pass:
+  - g5 seen-duplicate rate: `93.8%`
+  - g5 recent-window duplicate rate: `93.8%`
+- After this pass:
+  - g5 seen-duplicate rate: `44.2%`
+  - g5 recent-window duplicate rate: `6.5%`

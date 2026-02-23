@@ -1,0 +1,7 @@
+# Exclude from Cloud Build context (faster uploads)
+.git
+.gitignore
+node_modules
+output
+*.md
+scripts

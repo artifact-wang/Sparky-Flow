@@ -49,7 +49,8 @@ function getGradeWordMemory(grade) {
   if (!gradeWordMemory.has(grade)) {
     gradeWordMemory.set(grade, {
       seenWords: new Set(),
-      recentWords: []
+      recentWords: [],
+      wordUseCounts: new Map()
     });
   }
   return gradeWordMemory.get(grade);
@@ -62,7 +63,8 @@ function resetGradeWordMemory(grade) {
 
   gradeWordMemory.set(grade, {
     seenWords: new Set(),
-    recentWords: []
+    recentWords: [],
+    wordUseCounts: new Map()
   });
 }
 
@@ -82,6 +84,8 @@ function rememberRoundWords(grade, words) {
     memory.seenWords.add(word);
     memory.recentWords = memory.recentWords.filter((entry) => entry !== word);
     memory.recentWords.push(word);
+    const nextCount = (memory.wordUseCounts.get(word) || 0) + 1;
+    memory.wordUseCounts.set(word, nextCount);
   });
 
   if (memory.recentWords.length > windowSize) {
@@ -812,7 +816,8 @@ async function startRound() {
     pool,
     config,
     seenWords: Array.from(gradeMemory.seenWords),
-    recentWords: gradeMemory.recentWords
+    recentWords: gradeMemory.recentWords,
+    wordUsage: Object.fromEntries(gradeMemory.wordUseCounts)
   });
 
   state.roundIndex = round.roundIndex;
@@ -824,6 +829,12 @@ async function startRound() {
   state.roundWordPoolMeta = {
     gradePoolSize: pool.length,
     recentWordReuseBlocked: false,
+    freshCrosswordAvailable: false,
+    freshnessFallbackUsed: false,
+    freshWordsUsed: 0,
+    reusedWordsUsed: 0,
+    recentWordsUsed: 0,
+    maxWordUsageInBoard: 0,
     seenWordsCount: gradeMemory.seenWords.size,
     recentWordsCount: gradeMemory.recentWords.length,
     usedRecentWords: 0,
@@ -881,6 +892,12 @@ async function startGrade(grade) {
   state.roundWordPoolMeta = {
     gradePoolSize: 0,
     recentWordReuseBlocked: false,
+    freshCrosswordAvailable: false,
+    freshnessFallbackUsed: false,
+    freshWordsUsed: 0,
+    reusedWordsUsed: 0,
+    recentWordsUsed: 0,
+    maxWordUsageInBoard: 0,
     seenWordsCount: 0,
     recentWordsCount: 0,
     usedRecentWords: 0

@@ -374,7 +374,7 @@ body {
   display: grid;
   place-items: center;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   transition: transform 120ms ease, filter 120ms ease;
 }
 
@@ -414,21 +414,83 @@ body {
   place-items: center;
   pointer-events: none;
   z-index: 4;
+  --trail-energy: 0;
+  --trail-guide: 0.2;
 }
 
 .sparkli-path-node {
   width: 52%;
   height: 52%;
   border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  background: transparent;
+  opacity: 0;
   z-index: 4;
+}
+
+.sparkli-emission {
+  position: absolute;
+  inset: -20%;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.sparkli-spark {
+  position: absolute;
+  display: block;
+  clip-path: polygon(50% 0%, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0% 50%, 37% 37%);
+  transform: translate(-50%, -50%) rotate(var(--spark-rotate, 0deg));
+  animation-name: sparkTrailEject;
+  animation-timing-function: cubic-bezier(0.16, 0.74, 0.44, 1);
+  animation-iteration-count: infinite;
+  filter: saturate(calc(1.08 + (var(--trail-energy) * 0.26)));
+  will-change: transform, opacity;
+}
+
+.sparkli-spark-node {
+  filter: saturate(calc(1.14 + (var(--trail-energy) * 0.34)));
+}
+
+.sparkli-spark-0 {
+  background: radial-gradient(circle, rgba(255, 246, 177, 1) 0%, rgba(255, 190, 91, 0.96) 100%);
+  box-shadow: 0 0 3px rgba(255, 201, 98, 0.52);
+}
+
+.sparkli-spark-1 {
+  background: radial-gradient(circle, rgba(255, 238, 253, 1) 0%, rgba(255, 136, 193, 0.96) 100%);
+  box-shadow: 0 0 3px rgba(255, 126, 188, 0.5);
+}
+
+.sparkli-spark-2 {
+  background: radial-gradient(circle, rgba(239, 243, 255, 1) 0%, rgba(120, 147, 255, 0.96) 100%);
+  box-shadow: 0 0 3px rgba(111, 145, 255, 0.5);
+}
+
+.sparkli-spark-3 {
+  background: radial-gradient(circle, rgba(246, 255, 222, 1) 0%, rgba(126, 224, 154, 0.95) 100%);
+  box-shadow: 0 0 3px rgba(121, 222, 155, 0.48);
+}
+
+.sparkli-spark-4 {
+  background: radial-gradient(circle, rgba(255, 239, 212, 1) 0%, rgba(255, 170, 105, 0.95) 100%);
+  box-shadow: 0 0 3px rgba(255, 168, 110, 0.5);
+}
+
+.sparkli-spark-5 {
+  background: radial-gradient(circle, rgba(241, 237, 255, 1) 0%, rgba(178, 130, 255, 0.95) 100%);
+  box-shadow: 0 0 3px rgba(176, 126, 255, 0.5);
 }
 
 .sparkli-link {
   position: absolute;
-  background: #fff;
+  border-radius: 999px;
   z-index: 3;
+  opacity: 0;
+  background: transparent;
+}
+
+.sparkli-link::after {
+  display: none;
 }
 
 .sparkli-link-up,
@@ -436,6 +498,13 @@ body {
   width: 46%;
   height: 62%;
   left: 27%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 232, 141, calc(var(--trail-guide) * 0.8)) 0%,
+    rgba(255, 153, 199, calc(var(--trail-guide) * 0.9)) 38%,
+    rgba(126, 135, 255, var(--trail-guide)) 72%,
+    rgba(82, 216, 255, calc(var(--trail-guide) * 0.8)) 100%
+  );
 }
 
 .sparkli-link-left,
@@ -443,6 +512,13 @@ body {
   height: 46%;
   width: 62%;
   top: 27%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 232, 141, calc(var(--trail-guide) * 0.8)) 0%,
+    rgba(255, 153, 199, calc(var(--trail-guide) * 0.9)) 38%,
+    rgba(126, 135, 255, var(--trail-guide)) 72%,
+    rgba(82, 216, 255, calc(var(--trail-guide) * 0.8)) 100%
+  );
 }
 
 .sparkli-link-up {
@@ -483,12 +559,7 @@ body {
 }
 
 .sparkli-tail-dot {
-  width: 44%;
-  height: 44%;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
-  z-index: 5;
+  display: none;
 }
 
 .sparkli-footer {
@@ -1165,6 +1236,26 @@ body {
   50% {
     transform: scale(0.86);
     opacity: 0.5;
+  }
+}
+
+@keyframes sparkTrailEject {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(var(--spark-rotate, 0deg)) scale(0.52);
+    opacity: 0.28;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  82% {
+    opacity: 0.84;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) translate(var(--spark-tx, 0px), var(--spark-ty, 0px)) rotate(var(--spark-rotate, 0deg)) scale(1.06);
+    opacity: 0;
   }
 }
 

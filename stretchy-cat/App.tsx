@@ -554,7 +554,7 @@ const App: React.FC = () => {
           {isInfoOpen && (
             <InfoDialog
               title="How to play"
-              goal="Drag or use arrow keys to guide Sparkli through every walkable tile. Collect fish for bonus time and yarn for score boosts before they fade."
+              goal="Drag or use arrow keys to guide Sparkli through every walkable tile. Collect chrono beacons for bonus time and scout badges for score boosts before they fade out."
               goalNote="Backtrack by moving into your previous tile. Finish only when all required tiles are covered."
               onClose={() => setIsInfoOpen(false)}
             />
@@ -568,7 +568,7 @@ const App: React.FC = () => {
               </div>
               <div className="sparkli-pill">Sparkli Mode</div>
               <h1>Sparkli Trail Quest</h1>
-              <p>Fill every tile and land on the finish saucer to clear each level.</p>
+              <p>Fill every tile and reach the finish beacon before the countdown ends.</p>
             </div>
 
             <div className="sparkli-level-card">

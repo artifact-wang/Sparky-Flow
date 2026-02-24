@@ -190,3 +190,77 @@ Validation (this pass):
 
 Notes:
 - Remaining `stretchycat` strings are internal audio asset path segments in `App.tsx` (`/media/audio/sfx/stretchycat/...`) kept unchanged to avoid breaking SFX path resolution.
+
+User feedback pass (word-wheel style outward sparkles, invisible line geometry):
+- Updated trail rendering to emphasize particle emission over visible connectors:
+  - `components/Cell.tsx`:
+    - Replaced free-floating sparkle placement with emitter origins along hidden path nodes and link segments.
+    - Added directional outward travel vectors (`travelX`, `travelY`) for each sparkle particle.
+    - Emission density and burst count still scale with `completionRatio` (more particles as level completion increases).
+  - `index.css`:
+    - Made path geometry invisible (`.sparkli-path-node`, `.sparkli-link`, `.sparkli-tail-dot` now hidden/transparent).
+    - Added outward particle animation (`@keyframes sparkTrailEject`) using per-particle translation vars.
+    - Kept only sparkle particles visible for trail feedback.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright captures (escalated run for browser sandbox reliability):
+  - baseline: `output/web-game-sparkli-scout-v2/initial/shot-0.png` + `state-0.json` (`pathLength: 1`)
+  - gameplay: `output/web-game-sparkli-scout-v2/gameplay/shot-0.png` + `state-0.json` (`pathLength: 4`)
+- No generated `errors-*.json` in `output/web-game-sparkli-scout-v2`.
+
+Performance optimization pass (spark trail FPS):
+- Root issue identified: too many animated sparkle DOM nodes per path tile (origin points x burst count x full path length) + expensive CSS (`clip-path` star polygons and stacked `drop-shadow` filters).
+- Optimizations applied in `components/Cell.tsx`:
+  - Added quality scaling for low-power devices (`prefers-reduced-motion`, low memory/cores).
+  - Limited sparkle emission to recent active path window near the head instead of entire historical path.
+  - Reduced origin points and burst counts per connector; lowered particle size/travel/duration cost.
+- Optimizations applied in `index.css`:
+  - Replaced `clip-path` spark stars with rounded particles.
+  - Removed multi-layer `drop-shadow` filter usage; reduced glow/shadow cost.
+  - Kept outward ejection motion and invisible path geometry.
+
+Validation (optimization pass):
+- `npm run build`: PASS.
+- Playwright capture: `output/web-game-sparkli-scout-v3/gameplay/shot-0.png` + `state-0.json`.
+
+Follow-up tuning pass (user requested original feel, 3x larger + 3x sparser + simpler logic):
+- Reworked sparkle logic in `components/Cell.tsx`:
+  - Removed multi-origin/per-connection burst logic and low-power branching.
+  - Simplified to a small fixed emitter model on active recent path cells only.
+  - Spark count reduced to ~1/3 of prior density (`2..4` particles per active tile).
+  - Spark size increased to ~3x visual size range.
+- Reworked sparkle style in `index.css`:
+  - Restored star-like sparkle shape (`clip-path` star) for the original look.
+  - Kept invisible trail geometry.
+  - Reduced expensive visual effects (lighter shadows, no heavy stacked filter pipeline).
+- Validation:
+  - `npm run build`: PASS.
+  - Playwright capture: `output/web-game-sparkli-scout-v4/gameplay/shot-0.png` + `state-0.json`.
+
+Path readability + density tuning (lightweight):
+- User feedback: trail source lines/turns not clear enough; requested denser sparkle while keeping perf.
+- Implemented in `components/Cell.tsx`:
+  - Added simple connector-aware emitter anchors (center + per-direction midpoint).
+  - Kept simple O(n) particle generation (no nested burst/origin loops).
+  - Increased sparkle density moderately (`4..6` particles on active emitter cells).
+  - Maintained active-path window limit (`last 3` path cells + head) to keep cost bounded.
+- Implemented in `index.css`:
+  - Added lightweight guide glow for hidden path rails/nodes (low alpha, no expensive blur stack) so turns/lines are visible.
+  - Kept star sparkle shape and outward motion.
+- Validation:
+  - `npm run build`: PASS.
+  - Playwright capture: `output/web-game-sparkli-scout-v5/gameplay/shot-0.png` + `state-0.json`.
+
+User request pass (game-phase Sparkli transform):
+- Request: in gameplay (not menu), rotate Sparkli anti-clockwise by 90 degrees and make it 1.25x larger.
+- Updated `components/Cell.tsx`:
+  - `SparkliHeadIcon` now applies a game-only transform offset and scale:
+    - rotation offset: `-90deg` (anti-clockwise)
+    - scale: `1.25`
+  - Menu avatar remains unchanged because it uses `SparkliCharacter` `badge` variant in `EntryMenu.tsx`.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright capture (menu -> gameplay): `output/web-game-sparkli-rotate-scale/shot-0.png` + `state-0.json` (`mode: "playing"`).
+- No generated `errors-*.json` in `output/web-game-sparkli-rotate-scale`.

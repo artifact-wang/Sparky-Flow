@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CellType } from '../types';
 import SparkliCharacter from './SparkliCharacter';
 
@@ -15,6 +15,7 @@ interface CellProps {
   isCollected: boolean;
   pathIndex: number;
   currentPathLength: number;
+  completionRatio: number;
   connections: { up: boolean; down: boolean; left: boolean; right: boolean };
   headDirection: 'up' | 'down' | 'left' | 'right';
   levelStartTime: number;
@@ -27,40 +28,70 @@ interface CellProps {
   gridHeight: number;
 }
 
-const TreatIcon = () => (
-  <svg viewBox="0 0 48 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path
-      d="M24.4 2.1c8.3-1.3 15.5 2.2 21 11.2.8 1.3.8 2.9 0 4.2-5 8.2-12.2 11.4-20.2 10.7-6.5-.6-12.7-3.8-18-8.2-1.5 1.6-2.9 3.3-4.1 5.1-.9 1.2-2.6 1.4-3.8.5-1.2-.9-1.4-2.6-.5-3.8 1.3-1.8 2.7-3.5 4.1-5L.6 13.4C-.5 12.4-.5 10.8.5 9.7c1-1.1 2.6-1.2 3.7-.2l4.3 3.8c5.3-4.6 10.8-9.7 15.9-11.2Z"
-      fill="#FFFFFF"
-    />
-    <circle cx="30" cy="13" r="2.8" fill="#FF7D9E" />
+interface SparkParticle {
+  id: string;
+  left: number;
+  top: number;
+  size: number;
+  delay: number;
+  duration: number;
+  opacity: number;
+  palette: number;
+  rotate: number;
+  travelX: number;
+  travelY: number;
+  isNode: boolean;
+}
+
+interface SparkOrigin {
+  left: number;
+  top: number;
+  baseAngle: number | null;
+}
+
+const seededNoise = (seed: number) => {
+  const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+  return value - Math.floor(value);
+};
+
+const ChronoBeaconIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="24" cy="24" r="20" fill="#7A78FF" />
+    <circle cx="24" cy="24" r="15.6" fill="#F9E7F9" />
+    <circle cx="24" cy="24" r="10.5" fill="#FFFFFF" />
+    <path d="M24 17v7l5 3" stroke="#5F59CC" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14.5 24a9.5 9.5 0 0 1 7.2-9.2" stroke="#FFC45D" strokeWidth="2.8" strokeLinecap="round" />
+    <path d="M19.3 9.8h9.4" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" />
+    <circle cx="33.7" cy="15.2" r="2" fill="#FF8BB6" />
+    <path d="M24 11.5v2.5M16.9 14.4l1.6 1.8M31.1 14.4l-1.6 1.8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
-const YarnIcon = () => (
+const ScoutBadgeIcon = () => (
   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <circle cx="24" cy="24" r="20" fill="#FFFFFF" />
-    <path d="M9 24c4-6 10-10 15-10 6 0 11 4 15 10" stroke="#FF7CA8" strokeWidth="3" strokeLinecap="round" />
-    <path d="M11 31c4 3 8 5 13 5 5 0 9-2 13-5" stroke="#7D8BFF" strokeWidth="3" strokeLinecap="round" />
-    <path d="M15 13c4 3 6 7 6 11 0 5-2 9-5 13" stroke="#FFC04D" strokeWidth="3" strokeLinecap="round" />
+    <path d="M24 4 38 12v14L24 44 10 26V12L24 4Z" fill="#FFFFFF" />
+    <path d="M24 7.8 34.4 13.7v10.5L24 38.9 13.6 24.2V13.7L24 7.8Z" fill="#7F86FF" />
+    <path d="M24 13.6 30 17v7.6L24 32l-6-7.4V17l6-3.4Z" fill="#FFC46A" />
+    <path d="M24 19v7M20.5 22.5h7" stroke="#FFFFFF" strokeWidth="2.6" strokeLinecap="round" />
+    <path d="M10.2 29.2h4.4M33.4 29.2h4.4M8.8 33h6.5M32.7 33h6.5" stroke="#F7D98E" strokeWidth="2.1" strokeLinecap="round" />
   </svg>
 );
 
 const GoalIcon = () => (
   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <circle cx="24" cy="24" r="22" fill="#ffffff" fillOpacity="0.25" />
-    <path d="M17 36V11h3.6v25H17Zm6.5-17.7h13l-4.3 5.3 4.3 5.2h-13v-10.5Z" fill="#FFFFFF" />
+    <circle cx="24" cy="24" r="22" fill="#fff" fillOpacity="0.24" />
+    <rect x="21.2" y="9" width="5.2" height="28" rx="2.6" fill="#FFFFFF" />
+    <path d="M25.4 13.5h11.4l-3.9 5 3.9 4.9H25.4v-9.9Z" fill="#FFFFFF" />
+    <circle cx="24" cy="38.4" r="2.8" fill="#FFD07B" />
   </svg>
 );
 
 const StartIcon = () => (
   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <circle cx="24" cy="24" r="22" fill="#FFFFFF" fillOpacity="0.2" />
-    <circle cx="24" cy="28" r="8" fill="#FFFFFF" />
-    <circle cx="14" cy="19" r="4" fill="#FFFFFF" />
-    <circle cx="22" cy="15" r="4" fill="#FFFFFF" />
-    <circle cx="30" cy="15" r="4" fill="#FFFFFF" />
-    <circle cx="38" cy="19" r="4" fill="#FFFFFF" />
+    <circle cx="24" cy="24" r="11" fill="#FFFFFF" />
+    <circle cx="24" cy="24" r="5.6" fill="#7A7DFF" />
+    <path d="M24 7.5v5.3M9.4 24h5.3M24 40.5v-5.3M38.6 24h-5.3" stroke="#FFFFFF" strokeWidth="2.7" strokeLinecap="round" />
   </svg>
 );
 
@@ -68,8 +99,10 @@ const ObstacleIcon: React.FC<{ type: CellType }> = ({ type }) => {
   if (type === CellType.WATER) {
     return (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M8 20c3-3 6-3 9 0s6 3 9 0 6-3 9 0 6 3 9 0" stroke="#B6DBFF" strokeWidth="3" strokeLinecap="round" />
-        <path d="M8 28c3-3 6-3 9 0s6 3 9 0 6-3 9 0 6 3 9 0" stroke="#D3EBFF" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="24" cy="24" r="18" fill="#6A5EA8" />
+        <path d="M13 24c3.7-4.7 7.4-6.8 11-6.8 3.7 0 7.4 2.1 11 6.8-3.6 4.8-7.3 6.8-11 6.8-3.6 0-7.3-2-11-6.8Z" stroke="#D9ECFF" strokeWidth="2.6" />
+        <circle cx="24" cy="24" r="4.4" fill="#FFFFFF" />
+        <path d="M14.6 14.6 33.4 33.4" stroke="#FF93BF" strokeWidth="2.8" strokeLinecap="round" />
       </svg>
     );
   }
@@ -77,9 +110,11 @@ const ObstacleIcon: React.FC<{ type: CellType }> = ({ type }) => {
   if (type === CellType.PLANT) {
     return (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect x="16" y="28" width="16" height="10" rx="4" fill="#DEAD6A" />
-        <path d="M24 16c0 8-5 11-9 11 0-7 4-11 9-11Z" fill="#8CDA8D" />
-        <path d="M24 12c0 8 5 11 9 11 0-7-4-11-9-11Z" fill="#77C97B" />
+        <rect x="10" y="11" width="28" height="26" rx="7" fill="#6F6A91" />
+        <path d="M16 14v20M24 14v20M32 14v20" stroke="#F8D88E" strokeWidth="2.8" strokeLinecap="round" />
+        <circle cx="16" cy="24" r="2.2" fill="#FFFFFF" />
+        <circle cx="24" cy="18" r="2.2" fill="#FFFFFF" />
+        <circle cx="32" cy="24" r="2.2" fill="#FFFFFF" />
       </svg>
     );
   }
@@ -87,26 +122,36 @@ const ObstacleIcon: React.FC<{ type: CellType }> = ({ type }) => {
   if (type === CellType.COUCH) {
     return (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect x="8" y="20" width="32" height="14" rx="5" fill="#D2DBF8" />
-        <rect x="12" y="16" width="10" height="8" rx="3" fill="#E5EBFF" />
-        <rect x="26" y="16" width="10" height="8" rx="3" fill="#E5EBFF" />
+        <rect x="8.5" y="13" width="31" height="22" rx="8" fill="#6480BF" />
+        <rect x="12.8" y="16.8" width="22.4" height="14.5" rx="6" fill="#EAF4FF" />
+        <circle cx="18.2" cy="24" r="3.2" fill="#7A84DE" />
+        <circle cx="29.8" cy="24" r="3.2" fill="#7A84DE" />
+        <path d="M15 35.5h18" stroke="#FFFFFF" strokeWidth="2.3" strokeLinecap="round" />
       </svg>
     );
   }
 
   return (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect x="10" y="10" width="28" height="28" rx="6" fill="#E9D0B0" />
-      <path d="M12 20h24M12 28h24M20 12v24M28 12v24" stroke="#C79A62" strokeWidth="2" />
+      <rect x="9.5" y="9.5" width="29" height="29" rx="7" fill="#866EA0" />
+      <path d="M12.8 20h22.5M12.8 28h22.5M20 12.8v22.5M28 12.8v22.5" stroke="#FDE2A5" strokeWidth="2.3" strokeLinecap="round" />
+      <circle cx="16.2" cy="16.2" r="1.7" fill="#FFFFFF" />
+      <circle cx="31.8" cy="31.8" r="1.7" fill="#FFFFFF" />
     </svg>
   );
 };
 
 const SparkliHeadIcon: React.FC<{ direction: 'up' | 'down' | 'left' | 'right' }> = ({ direction }) => {
   const rotation = { up: 0, right: 90, down: 180, left: 270 }[direction];
+  const gamePhaseRotationOffset = -90;
+  const gamePhaseScale = 1.25;
 
   return (
-    <div className="sparkli-head" style={{ transform: `rotate(${rotation}deg)` }} aria-hidden="true">
+    <div
+      className="sparkli-head"
+      style={{ transform: `rotate(${rotation + gamePhaseRotationOffset}deg) scale(${gamePhaseScale})` }}
+      aria-hidden="true"
+    >
       <SparkliCharacter variant="head" />
     </div>
   );
@@ -120,6 +165,7 @@ const Cell: React.FC<CellProps> = ({
   isCollected,
   pathIndex,
   currentPathLength,
+  completionRatio,
   connections,
   headDirection,
   levelStartTime,
@@ -156,6 +202,78 @@ const Cell: React.FC<CellProps> = ({
     return `${posX}% ${posY}%`;
   }, [x, y, gridWidth, gridHeight]);
 
+  const trailIntensity = Math.max(0, Math.min(1, completionRatio));
+  const isActiveEmitter = isInPath;
+  const sparkleCount = isActiveEmitter ? 6 + Math.round(trailIntensity * 2) : 0;
+
+  const sparkOrigins = useMemo<SparkOrigin[]>(() => {
+    if (!isActiveEmitter) return [];
+
+    const origins: SparkOrigin[] = [
+      { left: 50, top: 50, baseAngle: null },
+    ];
+    if (connections.up) {
+      origins.push({ left: 50, top: 36, baseAngle: -Math.PI * 0.5 });
+      origins.push({ left: 50, top: 18, baseAngle: -Math.PI * 0.5 });
+    }
+    if (connections.down) {
+      origins.push({ left: 50, top: 64, baseAngle: Math.PI * 0.5 });
+      origins.push({ left: 50, top: 82, baseAngle: Math.PI * 0.5 });
+    }
+    if (connections.left) {
+      origins.push({ left: 36, top: 50, baseAngle: Math.PI });
+      origins.push({ left: 18, top: 50, baseAngle: Math.PI });
+    }
+    if (connections.right) {
+      origins.push({ left: 64, top: 50, baseAngle: 0 });
+      origins.push({ left: 82, top: 50, baseAngle: 0 });
+    }
+
+    return origins;
+  }, [connections.down, connections.left, connections.right, connections.up, isActiveEmitter]);
+
+  const emissionParticles = useMemo<SparkParticle[]>(() => {
+    if (!isActiveEmitter || sparkleCount === 0 || sparkOrigins.length === 0) return [];
+
+    const seedBase = (x + 1) * 101 + (y + 1) * 211 + (pathIndex + 2) * 307;
+    return Array.from({ length: sparkleCount }, (_, idx) => {
+      const seed = seedBase + idx * 53;
+      const n1 = seededNoise(seed + 13);
+      const n2 = seededNoise(seed + 17);
+      const n3 = seededNoise(seed + 19);
+      const n4 = seededNoise(seed + 23);
+      const n5 = seededNoise(seed + 29);
+      const origin = sparkOrigins[Math.floor(n5 * sparkOrigins.length) % sparkOrigins.length];
+      const angle = origin.baseAngle === null ? n3 * Math.PI * 2 : origin.baseAngle + (n3 - 0.5) * 0.95;
+      const travelDistance = 8 + n2 * (7 + trailIntensity * 5);
+      const isNode = origin.baseAngle === null;
+
+      return {
+        id: `${idx}-${Math.round(n1 * 1000)}`,
+        left: origin.left + (n1 - 0.5) * (isNode ? 2.2 : 1.6),
+        top: origin.top + (n2 - 0.5) * (isNode ? 2.2 : 1.6),
+        size: (isNode ? 9.6 : 7.6) + n4 * (isNode ? 4.2 : 3 + trailIntensity * 2.1),
+        delay: -(n5 * 1.2),
+        duration: (isNode ? 1.18 : 0.98) + n1 * 0.54,
+        opacity: (isNode ? 0.68 : 0.56) + n2 * (isNode ? 0.24 : 0.3),
+        palette: Math.floor(n3 * 6),
+        rotate: n4 * 180,
+        travelX: Math.cos(angle) * travelDistance,
+        travelY: Math.sin(angle) * travelDistance,
+        isNode,
+      };
+    });
+  }, [isActiveEmitter, sparkleCount, sparkOrigins, pathIndex, trailIntensity, x, y]);
+
+  const pathLayerStyle = useMemo(
+    () =>
+      ({
+        '--trail-energy': trailIntensity.toFixed(3),
+        '--trail-guide': (0.28 + trailIntensity * 0.2).toFixed(3),
+      }) as React.CSSProperties,
+    [trailIntensity],
+  );
+
   const tileStyle: React.CSSProperties = isInPath
     ? {
         backgroundImage: `radial-gradient(circle at ${bgPos}, #FFD59B 0%, #FF8EB8 45%, #9585F5 100%)`,
@@ -164,9 +282,9 @@ const Cell: React.FC<CellProps> = ({
     : {
         background:
           type === CellType.WATER
-            ? 'linear-gradient(155deg, #73B7FF 0%, #9AD7FF 100%)'
+            ? 'linear-gradient(160deg, #6E6CB0 0%, #7D95CF 100%)'
             : [CellType.BOX, CellType.COUCH, CellType.PLANT].includes(type)
-              ? 'linear-gradient(160deg, #90839f 0%, #80758f 100%)'
+              ? 'linear-gradient(160deg, #827599 0%, #706484 100%)'
               : type === CellType.START
                 ? 'linear-gradient(150deg, #7E95FF 0%, #A58BFF 100%)'
                 : 'linear-gradient(150deg, #FFF5D7 0%, #FFE9C4 100%)',
@@ -182,13 +300,13 @@ const Cell: React.FC<CellProps> = ({
       case CellType.TREAT:
         return (
           <div className={tokenClassName}>
-            <TreatIcon />
+            <ChronoBeaconIcon />
           </div>
         );
       case CellType.YARN:
         return (
           <div className={tokenClassName}>
-            <YarnIcon />
+            <ScoutBadgeIcon />
           </div>
         );
       case CellType.SAUCER:
@@ -217,7 +335,7 @@ const Cell: React.FC<CellProps> = ({
     }
   };
 
-  const nodeScale = Math.max(0.78, Math.min(1, currentPathLength / 5));
+  const nodeScale = Math.max(0.74, Math.min(1.24, 0.74 + trailIntensity * 0.46 + Math.min(0.08, currentPathLength * 0.008)));
 
   return (
     <button
@@ -233,7 +351,29 @@ const Cell: React.FC<CellProps> = ({
       {renderObject()}
 
       {isInPath && (
-        <div className="sparkli-path-layer" aria-hidden="true">
+        <div className="sparkli-path-layer" style={pathLayerStyle} aria-hidden="true">
+          <div className="sparkli-emission">
+            {emissionParticles.map(particle => (
+              <span
+                key={particle.id}
+                className={`sparkli-spark sparkli-spark-${particle.palette}${particle.isNode ? ' sparkli-spark-node' : ''}`}
+                style={
+                  {
+                    left: `${particle.left}%`,
+                    top: `${particle.top}%`,
+                    width: `${particle.size}px`,
+                    height: `${particle.size}px`,
+                    opacity: particle.opacity,
+                    animationDelay: `${particle.delay}s`,
+                    animationDuration: `${particle.duration}s`,
+                    '--spark-rotate': `${particle.rotate}deg`,
+                    '--spark-tx': `${particle.travelX}px`,
+                    '--spark-ty': `${particle.travelY}px`,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
           {!isHead && !isTail && <div className="sparkli-path-node" style={{ transform: `scale(${nodeScale})` }} />}
           {connections.up && <div className="sparkli-link sparkli-link-up" />}
           {connections.down && <div className="sparkli-link sparkli-link-down" />}

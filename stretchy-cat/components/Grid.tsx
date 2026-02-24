@@ -76,6 +76,8 @@ const Grid: React.FC<GridProps> = ({
     onCellMouseEnter({ x, y });
   };
 
+  const completionRatio = level.targetCount > 0 ? Math.min(1, path.length / level.targetCount) : 0;
+
   return (
     <div
       ref={gridRef}
@@ -163,6 +165,7 @@ const Grid: React.FC<GridProps> = ({
                 isCollected={isCollected}
                 pathIndex={pathIndex}
                 currentPathLength={path.length}
+                completionRatio={completionRatio}
                 connections={connections}
                 headDirection={headDirection}
                 levelStartTime={levelStartTime}

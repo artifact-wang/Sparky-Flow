@@ -280,25 +280,70 @@ function drawBoard(ctx, state, layout, palette, timeMs, boardCellCenters) {
 }
 
 function drawTrace(ctx, state, palette, layout, timeMs) {
-  if (!state.trace.points.length) {
+  if (!state.trace.indices.length) {
     return;
   }
 
-  const points = state.trace.points;
-  const baseHue = timeMs * 0.2;
+  const anchors = state.trace.indices
+    .map((index) => layout.wheelNodes[index])
+    .filter(Boolean)
+    .map((node) => ({ x: node.x, y: node.y }));
+  if (state.trace.touchPoint) {
+    anchors.push({
+      x: state.trace.touchPoint.x,
+      y: state.trace.touchPoint.y
+    });
+  }
 
-  const sparkleStart = Math.max(0, points.length - 12);
-  for (let i = sparkleStart; i < points.length; i += 1) {
-    const point = points[i];
-    if (!point) {
-      continue;
+  if (anchors.length < 2) {
+    return;
+  }
+
+  const baseHue = timeMs * 0.24;
+  for (let i = 0; i < anchors.length - 1; i += 1) {
+    const start = anchors[i];
+    const end = anchors[i + 1];
+    const gradient = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+    gradient.addColorStop(0, rainbowColor(baseHue + i * 30, 0.85, 92, 70));
+    gradient.addColorStop(0.5, rainbowColor(baseHue + i * 30 + 90, 0.95, 92, 68));
+    gradient.addColorStop(1, rainbowColor(baseHue + i * 30 + 170, 0.88, 90, 66));
+
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = gradient;
+    ctx.globalAlpha = 0.28;
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.95;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+    ctx.restore();
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const length = Math.hypot(dx, dy);
+    const sparkleCount = Math.max(3, Math.floor(length / 26));
+    for (let step = 0; step <= sparkleCount; step += 1) {
+      const t = sparkleCount === 0 ? 0 : step / sparkleCount;
+      const x = start.x + dx * t;
+      const y = start.y + dy * t;
+      const orbit = timeMs * 0.02 + i * 0.9 + step * 0.7;
+      drawSparkle(
+        ctx,
+        x + Math.cos(orbit) * 3.3,
+        y + Math.sin(orbit * 1.15) * 2.8,
+        3.8,
+        rainbowColor(baseHue + i * 18 + step * 16, 0.9, 94, 74)
+      );
     }
-    const step = i - sparkleStart;
-    const hue = baseHue + step * 24;
-    const orbit = timeMs * 0.02 + i * 0.85;
-    const sparkleX = point.x + Math.cos(orbit) * 4.8;
-    const sparkleY = point.y + Math.sin(orbit * 1.2) * 4.2;
-    drawSparkle(ctx, sparkleX, sparkleY, 4.2, rainbowColor(hue, 0.85, 92, 70));
   }
 
   if (state.trace.candidateWord) {

@@ -175,10 +175,6 @@ export function triggerAccelerationLane(state, boost = 1) {
   state.effects.laneBoost = Math.min(1.8, state.effects.laneBoost + boost * 0.42);
 }
 
-export function pulseTimer(state) {
-  state.effects.timerPulse = 1;
-}
-
 export function updateEffects(state, dtMs) {
   const dt = dtMs / 1000;
 
@@ -231,7 +227,6 @@ export function updateEffects(state, dtMs) {
 
   state.effects.laneBoost = Math.max(0, state.effects.laneBoost - dt * 0.52);
   state.effects.lanePhase += dt * (2.8 + state.effects.laneBoost * 5.2);
-  state.effects.timerPulse = Math.max(0, state.effects.timerPulse - dt * 2.4);
   state.effects.successPulse = Math.max(0, state.effects.successPulse - dt * 1.5);
 
   if (state.wheel.roundClearSpin) {

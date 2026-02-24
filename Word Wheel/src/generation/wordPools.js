@@ -18,24 +18,70 @@ export async function loadGradePool(grade) {
     throw new Error(`Failed to load grade ${grade} pool`);
   }
 
-  const words = await response.json();
+  const raw = await response.json();
   const unique = new Set();
   const entries = [];
 
-  words.forEach((word) => {
-    const cleaned = normalizeWord(word);
+  if (!raw || typeof raw !== "object" || !Array.isArray(raw.words) || !Array.isArray(raw.themes)) {
+    throw new Error(`Invalid grade${grade}.json schema. Expected { grade, themes, words }`);
+  }
+
+  const themes = raw.themes
+    .map((theme) => ({
+      id: String(theme?.id || "").trim(),
+      title: String(theme?.title || "").trim(),
+      description: String(theme?.description || "").trim()
+    }))
+    .filter((theme) => theme.id);
+  const themeIdSet = new Set(themes.map((theme) => theme.id));
+  const fallbackTheme = themes.find((theme) => theme.id === "everyday-life") || themes[0] || null;
+  const themeIndex = new Map(themes.map((theme) => [theme.id, []]));
+
+  raw.words.forEach((entry) => {
+    const cleaned = normalizeWord(entry?.word);
     if (!cleaned || unique.has(cleaned)) {
       return;
     }
-    unique.add(cleaned);
-    entries.push({
+
+    const rawLabels = Array.isArray(entry?.labels) ? entry.labels : [];
+    let labels = rawLabels
+      .map((label) => String(label || "").trim())
+      .filter((label) => themeIdSet.has(label));
+    labels = Array.from(new Set(labels));
+    if (!labels.length && fallbackTheme) {
+      labels = [fallbackTheme.id];
+    }
+    const primaryThemeId =
+      labels.find((label) => label !== "everyday-life") || labels[0] || fallbackTheme?.id || "everyday-life";
+
+    const clue = String(entry?.clue || "").trim() || "A common everyday word.";
+    const normalizedEntry = {
       word: cleaned,
+      clue,
+      labels,
+      themeIds: labels.slice(),
+      primaryThemeId,
       grade,
-      tags: ["core", `grade-${grade}`],
+      tags: ["core", `grade-${grade}`].concat(labels),
       frequencyBand: getFrequencyBand(cleaned)
-    });
+    };
+
+    unique.add(cleaned);
+    entries.push(normalizedEntry);
+
+    if (!themeIndex.has(primaryThemeId)) {
+      themeIndex.set(primaryThemeId, []);
+    }
+    themeIndex.get(primaryThemeId).push(normalizedEntry);
   });
 
-  gradeCache.set(grade, entries);
-  return entries;
+  const pool = {
+    grade,
+    entries,
+    themes,
+    themeIndex
+  };
+
+  gradeCache.set(grade, pool);
+  return pool;
 }

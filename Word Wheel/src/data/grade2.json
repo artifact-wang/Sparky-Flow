@@ -1,202 +1,2197 @@
-[
-  "ant",
-  "arm",
-  "bag",
-  "ball",
-  "bat",
-  "bed",
-  "bee",
-  "bell",
-  "big",
-  "bird",
-  "blue",
-  "boat",
-  "book",
-  "box",
-  "boy",
-  "bus",
-  "cake",
-  "cap",
-  "car",
-  "cat",
-  "chair",
-  "clock",
-  "cloud",
-  "coat",
-  "cow",
-  "cup",
-  "dad",
-  "day",
-  "desk",
-  "dog",
-  "doll",
-  "door",
-  "duck",
-  "ear",
-  "egg",
-  "eye",
-  "fan",
-  "farm",
-  "fish",
-  "flag",
-  "fox",
-  "frog",
-  "game",
-  "girl",
-  "goat",
-  "gold",
-  "grass",
-  "green",
-  "hand",
-  "hat",
-  "hen",
-  "hill",
-  "home",
-  "horse",
-  "house",
-  "jar",
-  "jump",
-  "key",
-  "kid",
-  "kite",
-  "leg",
-  "light",
-  "line",
-  "lion",
-  "log",
-  "map",
-  "mat",
-  "milk",
-  "moon",
-  "mouse",
-  "nest",
-  "net",
-  "nose",
-  "note",
-  "pan",
-  "park",
-  "pen",
-  "pet",
-  "pig",
-  "pink",
-  "plane",
-  "play",
-  "pond",
-  "rain",
-  "red",
-  "ring",
-  "road",
-  "rock",
-  "rope",
-  "run",
-  "sand",
-  "seed",
-  "ship",
-  "shoe",
-  "shop",
-  "sing",
-  "sit",
-  "sky",
-  "sled",
-  "small",
-  "sun",
-  "tap",
-  "toy",
-  "van",
-  "zoo",
-  "snow",
-  "sock",
-  "song",
-  "star",
-  "swim",
-  "tent",
-  "tree",
-  "wall",
-  "warm",
-  "wave",
-  "wind",
-  "wing",
-  "wolf",
-  "yard",
-  "about",
-  "above",
-  "after",
-  "again",
-  "alive",
-  "baker",
-  "beach",
-  "bread",
-  "bring",
-  "brush",
-  "candy",
-  "carry",
-  "clean",
-  "close",
-  "color",
-  "count",
-  "dance",
-  "dream",
-  "drink",
-  "drive",
-  "earth",
-  "every",
-  "floor",
-  "fruit",
-  "funny",
-  "giant",
-  "glass",
-  "happy",
-  "heart",
-  "heavy",
-  "hello",
-  "jelly",
-  "juice",
-  "learn",
-  "lemon",
-  "lunch",
-  "maybe",
-  "metal",
-  "money",
-  "music",
-  "night",
-  "north",
-  "ocean",
-  "paper",
-  "party",
-  "quiet",
-  "radio",
-  "rainy",
-  "ready",
-  "river",
-  "robot",
-  "short",
-  "sleep",
-  "smile",
-  "snack",
-  "sorry",
-  "study",
-  "sunny",
-  "abroad",
-  "accept",
-  "across",
-  "action",
-  "active",
-  "advice",
-  "afraid",
-  "amount",
-  "animal",
-  "answer",
-  "arrive",
-  "assume",
-  "author",
-  "before",
-  "behind",
-  "better",
-  "bottle",
-  "branch",
-  "bright",
-  "broken",
-  "button",
-  "camera",
-  "center"
-]
+{
+  "grade": 2,
+  "themes": [
+    {
+      "id": "animals",
+      "title": "Animals",
+      "description": "Words about animals, pets, and living creatures."
+    },
+    {
+      "id": "food",
+      "title": "Food",
+      "description": "Words for things we eat or drink."
+    },
+    {
+      "id": "home",
+      "title": "Home",
+      "description": "Words for home, rooms, and things around the house."
+    },
+    {
+      "id": "school",
+      "title": "School",
+      "description": "Words used in class, reading, and learning."
+    },
+    {
+      "id": "nature",
+      "title": "Nature",
+      "description": "Words about plants, land, water, and the outdoors."
+    },
+    {
+      "id": "actions",
+      "title": "Actions",
+      "description": "Words that describe what someone can do."
+    },
+    {
+      "id": "body",
+      "title": "Body",
+      "description": "Words for body parts and health ideas."
+    },
+    {
+      "id": "color-shape",
+      "title": "Colors and Shapes",
+      "description": "Words for colors, shapes, and visual features."
+    },
+    {
+      "id": "travel",
+      "title": "Travel",
+      "description": "Words about moving from place to place."
+    },
+    {
+      "id": "feelings",
+      "title": "Feelings",
+      "description": "Words that name emotions and moods."
+    },
+    {
+      "id": "community",
+      "title": "Community",
+      "description": "Words for people, jobs, and places in a town."
+    },
+    {
+      "id": "science",
+      "title": "Science",
+      "description": "Words about earth, space, and simple science topics."
+    },
+    {
+      "id": "arts",
+      "title": "Arts and Music",
+      "description": "Words used in drawing, songs, and creative work."
+    },
+    {
+      "id": "time-number",
+      "title": "Time and Number",
+      "description": "Words that describe time, order, and counting ideas."
+    },
+    {
+      "id": "weather",
+      "title": "Weather",
+      "description": "Words about weather and seasons."
+    },
+    {
+      "id": "technology",
+      "title": "Technology",
+      "description": "Words for tools, machines, and digital devices."
+    },
+    {
+      "id": "sports",
+      "title": "Sports",
+      "description": "Words for games, movement, and team play."
+    },
+    {
+      "id": "everyday-life",
+      "title": "Everyday Life",
+      "description": "Common words used in daily life and conversation."
+    }
+  ],
+  "words": [
+    {
+      "word": "air",
+      "clue": "Starts with A. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "ant",
+      "clue": "A tiny insect that walks in lines. Starts with A. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "arm",
+      "clue": "You lift things with it. Starts with A. It has 3 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "bag",
+      "clue": "Starts with B. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bat",
+      "clue": "An animal that flies at night. Starts with B. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "bed",
+      "clue": "You sleep on it. Starts with B. It has 3 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "bee",
+      "clue": "An insect that makes honey. Starts with B. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "big",
+      "clue": "Starts with B. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "boy",
+      "clue": "Starts with B. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bus",
+      "clue": "A big vehicle that carries people. Starts with B. It has 3 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "cap",
+      "clue": "Starts with C. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "car",
+      "clue": "A vehicle you ride in. Starts with C. It has 3 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "cat",
+      "clue": "A pet that says meow. Starts with C. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "cow",
+      "clue": "A farm animal that says moo. Starts with C. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "cup",
+      "clue": "Starts with C. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "dad",
+      "clue": "A father. Starts with D. It has 3 letters.",
+      "labels": [
+        "community"
+      ]
+    },
+    {
+      "word": "day",
+      "clue": "Time when the sun is up. Starts with D. It has 3 letters.",
+      "labels": [
+        "time-number"
+      ]
+    },
+    {
+      "word": "dog",
+      "clue": "A pet that barks. Starts with D. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "ear",
+      "clue": "You hear with it. Starts with E. It has 3 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "egg",
+      "clue": "Food that comes from a chicken. Starts with E. It has 3 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "eye",
+      "clue": "You see with it. Starts with E. It has 3 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "fan",
+      "clue": "It blows air to cool you. Starts with F. It has 3 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "hat",
+      "clue": "Starts with H. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "hen",
+      "clue": "A mother chicken. Starts with H. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "key",
+      "clue": "You use it to open a lock. Starts with K. It has 3 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "kid",
+      "clue": "A child. Starts with K. It has 3 letters.",
+      "labels": [
+        "community"
+      ]
+    },
+    {
+      "word": "leg",
+      "clue": "You walk and run with it. Starts with L. It has 3 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "log",
+      "clue": "A big piece of a tree trunk. Starts with L. It has 3 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "map",
+      "clue": "A picture that shows places. Starts with M. It has 3 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "mat",
+      "clue": "Starts with M. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "net",
+      "clue": "Starts with N. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "pan",
+      "clue": "You cook food in it. Starts with P. It has 3 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "pen",
+      "clue": "You write with it. Starts with P. It has 3 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "pet",
+      "clue": "An animal that lives with a family. Starts with P. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "pig",
+      "clue": "A farm animal that says oink. Starts with P. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "red",
+      "clue": "The color of an apple. Starts with R. It has 3 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "run",
+      "clue": "Move fast on your feet. Starts with R. It has 3 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "sit",
+      "clue": "Rest on a chair. Starts with S. It has 3 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "sky",
+      "clue": "The space above you. Starts with S. It has 3 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "sun",
+      "clue": "The big light in the day sky. Starts with S. It has 3 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "tap",
+      "clue": "Starts with T. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "toy",
+      "clue": "Starts with T. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "van",
+      "clue": "A big car that carries people. Starts with V. It has 3 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "box",
+      "clue": "Starts with B. It has 3 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "fox",
+      "clue": "A wild animal with a bushy tail. Starts with F. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "jar",
+      "clue": "A container with a lid. Starts with J. It has 3 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "zoo",
+      "clue": "A place to see animals. Starts with Z. It has 3 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "bake",
+      "clue": "Make food in an oven. Starts with B, ends with E, and has 4 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "ball",
+      "clue": "A round thing you throw or kick. Starts with B, ends with L, and has 4 letters.",
+      "labels": [
+        "sports"
+      ]
+    },
+    {
+      "word": "bank",
+      "clue": "Starts with B, ends with K, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bell",
+      "clue": "Starts with B, ends with L, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bird",
+      "clue": "An animal with wings and feathers. Starts with B, ends with D, and has 4 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "blow",
+      "clue": "Starts with B, ends with W, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "blue",
+      "clue": "The color of the sky. Starts with B, ends with E, and has 4 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "boat",
+      "clue": "A vehicle that goes on water. Starts with B, ends with T, and has 4 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "boil",
+      "clue": "Starts with B, ends with L, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "book",
+      "clue": "You read it. Starts with B, ends with K, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "cake",
+      "clue": "A sweet dessert. Starts with C, ends with E, and has 4 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "care",
+      "clue": "Starts with C, ends with E, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "coat",
+      "clue": "You wear it to stay warm. Starts with C, ends with T, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "deep",
+      "clue": "Starts with D, ends with P, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "desk",
+      "clue": "A table for work or school. Starts with D, ends with K, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "doll",
+      "clue": "Starts with D, ends with L, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "door",
+      "clue": "You open it to go in. Starts with D, ends with R, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "duck",
+      "clue": "A bird that swims and says quack. Starts with D, ends with K, and has 4 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "easy",
+      "clue": "Starts with E, ends with Y, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "even",
+      "clue": "Starts with E, ends with N, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "farm",
+      "clue": "A place where food is grown. Starts with F, ends with M, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "flag",
+      "clue": "Starts with F, ends with G, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "frog",
+      "clue": "A small animal that hops and swims. Starts with F, ends with G, and has 4 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "game",
+      "clue": "Something you play for fun. Starts with G, ends with E, and has 4 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "girl",
+      "clue": "A young person who is a girl. Starts with G, ends with L, and has 4 letters.",
+      "labels": [
+        "community"
+      ]
+    },
+    {
+      "word": "glow",
+      "clue": "Starts with G, ends with W, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "goat",
+      "clue": "A farm animal that can climb. Starts with G, ends with T, and has 4 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "gold",
+      "clue": "A shiny yellow metal. Starts with G, ends with D, and has 4 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "hand",
+      "clue": "You hold things with it. Starts with H, ends with D, and has 4 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "hill",
+      "clue": "A small mountain. Starts with H, ends with L, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "home",
+      "clue": "The place where you live. Starts with H, ends with E, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "kite",
+      "clue": "Starts with K, ends with E, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "line",
+      "clue": "Starts with L, ends with E, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "lion",
+      "clue": "A big cat with a mane. Starts with L, ends with N, and has 4 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "milk",
+      "clue": "A white drink from a cow. Starts with M, ends with K, and has 4 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "moon",
+      "clue": "The bright thing in the night sky. Starts with M, ends with N, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "nest",
+      "clue": "A bird's home. Starts with N, ends with T, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "nose",
+      "clue": "You smell with it. Starts with N, ends with E, and has 4 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "note",
+      "clue": "A short message you write. Starts with N, ends with E, and has 4 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "park",
+      "clue": "A place to play outside. Starts with P, ends with K, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "pink",
+      "clue": "A light red color. Starts with P, ends with K, and has 4 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "play",
+      "clue": "Have fun with a game. Starts with P, ends with Y, and has 4 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "pond",
+      "clue": "A small lake. Starts with P, ends with D, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "rain",
+      "clue": "Water that falls from clouds. Starts with R, ends with N, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "ring",
+      "clue": "Starts with R, ends with G, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "road",
+      "clue": "A path for cars to drive on. Starts with R, ends with D, and has 4 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "rock",
+      "clue": "A hard stone. Starts with R, ends with K, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "rope",
+      "clue": "Starts with R, ends with E, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "sand",
+      "clue": "Tiny bits on a beach. Starts with S, ends with D, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "seed",
+      "clue": "A tiny thing that grows into a plant. Starts with S, ends with D, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "sing",
+      "clue": "Make music with your voice. Starts with S, ends with G, and has 4 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "sled",
+      "clue": "Starts with S, ends with D, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "snow",
+      "clue": "White flakes that fall in winter. Starts with S, ends with W, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "sock",
+      "clue": "You wear it under a shoe. Starts with S, ends with K, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "song",
+      "clue": "Music you can sing. Starts with S, ends with G, and has 4 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "star",
+      "clue": "A bright light in the night sky. Starts with S, ends with R, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "swim",
+      "clue": "Move in water. Starts with S, ends with M, and has 4 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "tent",
+      "clue": "Starts with T, ends with T, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "tree",
+      "clue": "A tall plant with a trunk. Starts with T, ends with E, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "wall",
+      "clue": "A side of a room. Starts with W, ends with L, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "warm",
+      "clue": "Not cold. Starts with W, ends with M, and has 4 letters.",
+      "labels": [
+        "weather"
+      ]
+    },
+    {
+      "word": "wave",
+      "clue": "Water that moves up and down. Starts with W, ends with E, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "wind",
+      "clue": "Moving air. Starts with W, ends with D, and has 4 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "wing",
+      "clue": "Starts with W, ends with G, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "wolf",
+      "clue": "A wild animal that howls. Starts with W, ends with F, and has 4 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "yard",
+      "clue": "Land next to a house. Starts with Y, ends with D, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "dish",
+      "clue": "Starts with D, ends with H, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "fish",
+      "clue": "Starts with F, ends with H, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "ship",
+      "clue": "A big boat. Starts with S, ends with P, and has 4 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "shoe",
+      "clue": "You wear it on your foot. Starts with S, ends with E, and has 4 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "shop",
+      "clue": "Starts with S, ends with P, and has 4 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "jump",
+      "clue": "Hop up into the air. Starts with J, ends with P, and has 4 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "about",
+      "clue": "A word that means \"around\" or \"near\". Starts with A, ends with T, and has 5 letters.",
+      "labels": [
+        "time-number"
+      ]
+    },
+    {
+      "word": "above",
+      "clue": "Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "acorn",
+      "clue": "Starts with A, ends with N, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "after",
+      "clue": "Later than. Starts with A, ends with R, and has 5 letters.",
+      "labels": [
+        "time-number"
+      ]
+    },
+    {
+      "word": "again",
+      "clue": "Starts with A, ends with N, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "agent",
+      "clue": "Starts with A, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "alive",
+      "clue": "Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "allow",
+      "clue": "Starts with A, ends with W, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "alone",
+      "clue": "Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "among",
+      "clue": "Starts with A, ends with G, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "apple",
+      "clue": "A round fruit that can be red. Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "apron",
+      "clue": "Starts with A, ends with N, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "aside",
+      "clue": "Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "awake",
+      "clue": "Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "badge",
+      "clue": "Starts with B, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "baker",
+      "clue": "Starts with B, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "basic",
+      "clue": "Starts with B, ends with C, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "begin",
+      "clue": "Starts with B, ends with N, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "below",
+      "clue": "Starts with B, ends with W, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "brave",
+      "clue": "Not scared when things are hard. Starts with B, ends with E, and has 5 letters.",
+      "labels": [
+        "feelings"
+      ]
+    },
+    {
+      "word": "bread",
+      "clue": "Food made from flour. Starts with B, ends with D, and has 5 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "bring",
+      "clue": "Starts with B, ends with G, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "broad",
+      "clue": "Starts with B, ends with D, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "buddy",
+      "clue": "Starts with B, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "candy",
+      "clue": "A sweet treat. Starts with C, ends with Y, and has 5 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "carry",
+      "clue": "Starts with C, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "clean",
+      "clue": "Starts with C, ends with N, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "clear",
+      "clue": "Starts with C, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "clerk",
+      "clue": "Starts with C, ends with K, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "clock",
+      "clue": "It tells the time. Starts with C, ends with K, and has 5 letters.",
+      "labels": [
+        "time-number"
+      ]
+    },
+    {
+      "word": "close",
+      "clue": "Starts with C, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "cloud",
+      "clue": "A white shape in the sky. Starts with C, ends with D, and has 5 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "color",
+      "clue": "Red and blue are this. Starts with C, ends with R, and has 5 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "count",
+      "clue": "Starts with C, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "cover",
+      "clue": "Starts with C, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "cross",
+      "clue": "Starts with C, ends with S, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "dance",
+      "clue": "Move your body to music. Starts with D, ends with E, and has 5 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "dense",
+      "clue": "Starts with D, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "donut",
+      "clue": "Starts with D, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "dream",
+      "clue": "See stories in your sleep. Starts with D, ends with M, and has 5 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "drift",
+      "clue": "Starts with D, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "drink",
+      "clue": "Starts with D, ends with K, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "drive",
+      "clue": "Make a car go. Starts with D, ends with E, and has 5 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "eager",
+      "clue": "Starts with E, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "eagle",
+      "clue": "A big bird that can soar. Starts with E, ends with E, and has 5 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "empty",
+      "clue": "Starts with E, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "enter",
+      "clue": "Starts with E, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "every",
+      "clue": "Starts with E, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "fancy",
+      "clue": "Starts with F, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "final",
+      "clue": "Starts with F, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "flame",
+      "clue": "Starts with F, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "floor",
+      "clue": "You stand on it inside. Starts with F, ends with R, and has 5 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "focus",
+      "clue": "Starts with F, ends with S, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "fruit",
+      "clue": "Starts with F, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "funny",
+      "clue": "Starts with F, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "giant",
+      "clue": "Starts with G, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "glass",
+      "clue": "Starts with G, ends with S, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "grass",
+      "clue": "Green plants on the ground. Starts with G, ends with S, and has 5 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "green",
+      "clue": "The color of grass. Starts with G, ends with N, and has 5 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "happy",
+      "clue": "Feeling glad. Starts with H, ends with Y, and has 5 letters.",
+      "labels": [
+        "feelings"
+      ]
+    },
+    {
+      "word": "heart",
+      "clue": "It beats inside your chest. Starts with H, ends with T, and has 5 letters.",
+      "labels": [
+        "body"
+      ]
+    },
+    {
+      "word": "heavy",
+      "clue": "Starts with H, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "hello",
+      "clue": "Starts with H, ends with O, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "horse",
+      "clue": "A big animal you can ride. Starts with H, ends with E, and has 5 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "house",
+      "clue": "A building where people live. Starts with H, ends with E, and has 5 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "ideal",
+      "clue": "Starts with I, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "image",
+      "clue": "Starts with I, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "learn",
+      "clue": "To get new knowledge. Starts with L, ends with N, and has 5 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "lemon",
+      "clue": "A sour yellow fruit. Starts with L, ends with N, and has 5 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "level",
+      "clue": "Starts with L, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "light",
+      "clue": "Starts with L, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "local",
+      "clue": "Starts with L, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "lucky",
+      "clue": "Starts with L, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "magic",
+      "clue": "Starts with M, ends with C, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "maybe",
+      "clue": "Starts with M, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "metal",
+      "clue": "A hard, shiny material. Starts with M, ends with L, and has 5 letters.",
+      "labels": [
+        "science"
+      ]
+    },
+    {
+      "word": "money",
+      "clue": "Starts with M, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "mouse",
+      "clue": "A small animal that can squeak. Starts with M, ends with E, and has 5 letters.",
+      "labels": [
+        "animals"
+      ]
+    },
+    {
+      "word": "music",
+      "clue": "Songs and sounds you hear. Starts with M, ends with C, and has 5 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "night",
+      "clue": "Dark time when you sleep. Starts with N, ends with T, and has 5 letters.",
+      "labels": [
+        "time-number"
+      ]
+    },
+    {
+      "word": "ocean",
+      "clue": "A very big sea. Starts with O, ends with N, and has 5 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "often",
+      "clue": "Starts with O, ends with N, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "order",
+      "clue": "Starts with O, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "owner",
+      "clue": "Starts with O, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "paper",
+      "clue": "You write or draw on it. Starts with P, ends with R, and has 5 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "party",
+      "clue": "Starts with P, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "piece",
+      "clue": "Starts with P, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "place",
+      "clue": "Starts with P, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "plane",
+      "clue": "A vehicle that flies in the sky. Starts with P, ends with E, and has 5 letters.",
+      "labels": [
+        "travel"
+      ]
+    },
+    {
+      "word": "point",
+      "clue": "Starts with P, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "power",
+      "clue": "Starts with P, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "radio",
+      "clue": "Starts with R, ends with O, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "rainy",
+      "clue": "With lots of rain. Starts with R, ends with Y, and has 5 letters.",
+      "labels": [
+        "weather"
+      ]
+    },
+    {
+      "word": "rapid",
+      "clue": "Starts with R, ends with D, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "ready",
+      "clue": "Starts with R, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "right",
+      "clue": "Starts with R, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "river",
+      "clue": "Water that flows like a long stream. Starts with R, ends with R, and has 5 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "robot",
+      "clue": "Starts with R, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "round",
+      "clue": "Shaped like a circle. Starts with R, ends with D, and has 5 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "skill",
+      "clue": "Starts with S, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "sleep",
+      "clue": "Starts with S, ends with P, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "small",
+      "clue": "Starts with S, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "smile",
+      "clue": "Make a happy face. Starts with S, ends with E, and has 5 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "snack",
+      "clue": "A small food between meals. Starts with S, ends with K, and has 5 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "solid",
+      "clue": "Starts with S, ends with D, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "sorry",
+      "clue": "What you say after a mistake. Starts with S, ends with Y, and has 5 letters.",
+      "labels": [
+        "feelings"
+      ]
+    },
+    {
+      "word": "study",
+      "clue": "Learn by reading and practicing. Starts with S, ends with Y, and has 5 letters.",
+      "labels": [
+        "actions"
+      ]
+    },
+    {
+      "word": "sunny",
+      "clue": "With lots of sun. Starts with S, ends with Y, and has 5 letters.",
+      "labels": [
+        "weather"
+      ]
+    },
+    {
+      "word": "truly",
+      "clue": "Starts with T, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "trust",
+      "clue": "Starts with T, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "under",
+      "clue": "Starts with U, ends with R, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "value",
+      "clue": "Starts with V, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "voice",
+      "clue": "Starts with V, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "world",
+      "clue": "Starts with W, ends with D, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "beach",
+      "clue": "Sand by the ocean. Starts with B, ends with H, and has 5 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "brush",
+      "clue": "Starts with B, ends with H, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "chair",
+      "clue": "You sit on it. Starts with C, ends with R, and has 5 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "earth",
+      "clue": "The planet we live on. Starts with E, ends with H, and has 5 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "flash",
+      "clue": "Starts with F, ends with H, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "lunch",
+      "clue": "Starts with L, ends with H, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "north",
+      "clue": "Starts with N, ends with H, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "short",
+      "clue": "Starts with S, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "thank",
+      "clue": "Starts with T, ends with K, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "thick",
+      "clue": "Starts with T, ends with K, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "amaze",
+      "clue": "Starts with A, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "enjoy",
+      "clue": "Starts with E, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "equal",
+      "clue": "Starts with E, ends with L, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "exact",
+      "clue": "Starts with E, ends with T, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "extra",
+      "clue": "Starts with E, ends with A, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "jelly",
+      "clue": "Starts with J, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "jolly",
+      "clue": "Starts with J, ends with Y, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "judge",
+      "clue": "Starts with J, ends with E, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "juice",
+      "clue": "A drink made from fruit. Starts with J, ends with E, and has 5 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "quick",
+      "clue": "Starts with Q, ends with K, and has 5 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "quiet",
+      "clue": "Not loud. Starts with Q, ends with T, and has 5 letters.",
+      "labels": [
+        "feelings"
+      ]
+    },
+    {
+      "word": "abroad",
+      "clue": "Starts with A, ends with D, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "accept",
+      "clue": "Starts with A, ends with T, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "across",
+      "clue": "Starts with A, ends with S, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "active",
+      "clue": "Starts with A, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "advice",
+      "clue": "Starts with A, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "afraid",
+      "clue": "Starts with A, ends with D, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "always",
+      "clue": "Starts with A, ends with S, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "amount",
+      "clue": "Starts with A, ends with T, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "animal",
+      "clue": "Starts with A, ends with L, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "answer",
+      "clue": "Starts with A, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "anyone",
+      "clue": "Starts with A, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "arrive",
+      "clue": "Starts with A, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "assume",
+      "clue": "Starts with A, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bakery",
+      "clue": "Starts with B, ends with Y, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bamboo",
+      "clue": "Starts with B, ends with O, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "basket",
+      "clue": "Starts with B, ends with T, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "beaver",
+      "clue": "Starts with B, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "become",
+      "clue": "Starts with B, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "before",
+      "clue": "Earlier than. Starts with B, ends with E, and has 6 letters.",
+      "labels": [
+        "time-number"
+      ]
+    },
+    {
+      "word": "behind",
+      "clue": "Starts with B, ends with D, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "better",
+      "clue": "Starts with B, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "beyond",
+      "clue": "Starts with B, ends with D, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bottle",
+      "clue": "You drink from it. Starts with B, ends with E, and has 6 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "bottom",
+      "clue": "Starts with B, ends with M, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bright",
+      "clue": "Starts with B, ends with T, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "broken",
+      "clue": "Starts with B, ends with N, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "bubble",
+      "clue": "Starts with B, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "budget",
+      "clue": "Starts with B, ends with T, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "butter",
+      "clue": "Starts with B, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "button",
+      "clue": "Starts with B, ends with N, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "camera",
+      "clue": "A tool that takes pictures. Starts with C, ends with A, and has 6 letters.",
+      "labels": [
+        "arts"
+      ]
+    },
+    {
+      "word": "candle",
+      "clue": "Wax that makes a small light. Starts with C, ends with E, and has 6 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "canyon",
+      "clue": "A deep crack in the land. Starts with C, ends with N, and has 6 letters.",
+      "labels": [
+        "nature"
+      ]
+    },
+    {
+      "word": "castle",
+      "clue": "Starts with C, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "cellar",
+      "clue": "Starts with C, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "center",
+      "clue": "Starts with C, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "cereal",
+      "clue": "Crunchy breakfast food. Starts with C, ends with L, and has 6 letters.",
+      "labels": [
+        "food"
+      ]
+    },
+    {
+      "word": "circle",
+      "clue": "A round shape like a coin. Starts with C, ends with E, and has 6 letters.",
+      "labels": [
+        "color-shape"
+      ]
+    },
+    {
+      "word": "clover",
+      "clue": "Starts with C, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "common",
+      "clue": "Starts with C, ends with N, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "copper",
+      "clue": "Starts with C, ends with R, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "corner",
+      "clue": "Where two walls meet. Starts with C, ends with R, and has 6 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "cotton",
+      "clue": "Soft cloth comes from it. Starts with C, ends with N, and has 6 letters.",
+      "labels": [
+        "home"
+      ]
+    },
+    {
+      "word": "cradle",
+      "clue": "Starts with C, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    },
+    {
+      "word": "crayon",
+      "clue": "A stick you color with. Starts with C, ends with N, and has 6 letters.",
+      "labels": [
+        "school"
+      ]
+    },
+    {
+      "word": "create",
+      "clue": "Starts with C, ends with E, and has 6 letters.",
+      "labels": [
+        "everyday-life"
+      ]
+    }
+  ]
+}

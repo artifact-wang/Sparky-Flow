@@ -1,7 +1,3 @@
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
 export function createUIOverlay(root = document) {
   const hud = root.getElementById("top-hud");
   const menu = root.getElementById("grade-menu");
@@ -15,8 +11,8 @@ export function createUIOverlay(root = document) {
   const hintValue = root.getElementById("hint-value");
   const hintChip = root.getElementById("hint-chip");
   const roundValue = root.getElementById("round-value");
-
-  const timerFill = root.getElementById("timer-fill");
+  const themeValue = root.getElementById("theme-value");
+  const clueValue = root.getElementById("clue-value");
 
   const muteBtn = root.getElementById("btn-mute");
   const restartBtn = root.getElementById("btn-restart");
@@ -82,12 +78,15 @@ export function createUIOverlay(root = document) {
     streakValue.textContent = `${state.streak}`;
     hintValue.textContent = `${state.hint.remaining}`;
     roundValue.textContent = `${state.roundIndex + 1}`;
+    if (themeValue) {
+      themeValue.textContent = state.activeTheme?.title ? `Theme: ${state.activeTheme.title}` : "Theme: -";
+    }
+    if (clueValue) {
+      clueValue.textContent = state.hint.activeClue || "Tap Hint to reveal a clue.";
+    }
     if (hintChip) {
       hintChip.disabled = state.mode !== "playing" || state.hint.remaining <= 0 || state.hint.cooldownMs > 0;
     }
-
-    const progress = clamp(state.timerMaxMs ? state.timerMs / state.timerMaxMs : 0, 0, 1);
-    timerFill.style.transform = `scaleX(${progress})`;
   }
 
   function setMuteButton(muted) {

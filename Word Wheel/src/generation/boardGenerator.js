@@ -564,11 +564,25 @@ export function generateRound({
   roundIndex,
   sessionSalt,
   pool,
+  activeThemeId = null,
+  activeTheme = null,
+  themeEntries = null,
   config,
   seenWords = [],
   recentWords = [],
   wordUsage = {}
 }) {
+  const sourcePool = Array.isArray(themeEntries)
+    ? themeEntries
+    : pool && Array.isArray(pool.entries)
+      ? pool.entries
+      : Array.isArray(pool)
+        ? pool
+        : [];
+  if (!sourcePool.length) {
+    throw new Error(`No pool entries available for grade ${grade}`);
+  }
+
   const seedBase = `${grade}-${roundIndex}-${sessionSalt}`;
   const seenSet = new Set(seenWords.map((word) => normalizeWord(word)).filter(Boolean));
   const recentSet = new Set(recentWords.map((word) => normalizeWord(word)).filter(Boolean));
@@ -589,7 +603,7 @@ export function generateRound({
       minBoardWords: Math.max(3, config.minBoardWords - relaxLevel)
     };
 
-    const wheel = pickWheelLetters(pool, runtimeConfig, rng, {
+    const wheel = pickWheelLetters(sourcePool, runtimeConfig, rng, {
       seenSet,
       recentSet,
       usageMap
@@ -616,6 +630,34 @@ export function generateRound({
     if (!board) {
       continue;
     }
+
+    const entryByWord = new Map();
+    sourcePool.forEach((entry) => {
+      const key = normalizeWord(entry.word);
+      if (!key || entryByWord.has(key)) {
+        return;
+      }
+      entryByWord.set(key, entry);
+    });
+    board.words = board.words.map((word) => {
+      const key = normalizeWord(word.text);
+      const meta = key ? entryByWord.get(key) : null;
+      return {
+        ...word,
+        clue: String(meta?.clue || "A common everyday word."),
+        labels: Array.isArray(meta?.labels) ? meta.labels.slice() : [],
+        themeIds: Array.isArray(meta?.themeIds) ? meta.themeIds.slice() : [],
+        primaryThemeId: String(meta?.primaryThemeId || "")
+      };
+    });
+
+    if (
+      activeThemeId &&
+      board.words.some((word) => String(word.primaryThemeId || "") !== String(activeThemeId))
+    ) {
+      continue;
+    }
+
     const boardWords = board.words.map((word) => normalizeWord(word.text));
     const freshnessSummary = summarizeWordFreshness(boardWords, seenSet, recentSet, usageMap);
 
@@ -628,13 +670,25 @@ export function generateRound({
       seed,
       grade,
       roundIndex,
-      timerSeconds: config.timerSeconds,
       wheelLetters: wheel.letters.map((letter) => letter.toUpperCase()),
       board,
       validWords: board.words.map((word) => word.text).sort((a, b) => a.localeCompare(b)),
       wordLookup,
+      theme: activeTheme
+        ? {
+            id: activeTheme.id,
+            title: activeTheme.title,
+            description: activeTheme.description
+          }
+        : activeThemeId
+          ? {
+              id: activeThemeId,
+              title: activeThemeId,
+              description: ""
+            }
+          : null,
       wordPoolMeta: {
-        gradePoolSize: pool.length,
+        gradePoolSize: Array.isArray(pool?.entries) ? pool.entries.length : Array.isArray(pool) ? pool.length : 0,
         recentWordReuseBlocked: selection.recentWordReuseBlocked,
         freshCrosswordAvailable,
         freshnessFallbackUsed: selection.freshnessFallbackUsed,

@@ -85,9 +85,13 @@ export function createRuntimeState(saveState) {
     round: null,
     roundConfig: null,
     roundDifficultyTier: 0,
+    activeTheme: null,
+    recentThemesByGrade: {},
     wordSequence: [],
     wordSequenceIndex: 0,
     currentGoalWord: null,
+    roundElapsedMs: 0,
+    hintsUsedThisRound: 0,
     roundWordPoolMeta: {
       gradePoolSize: 0,
       recentWordReuseBlocked: false,
@@ -100,8 +104,6 @@ export function createRuntimeState(saveState) {
     stars: saveState.stars,
     streak: 0,
     combo: 0,
-    timerMs: 0,
-    timerMaxMs: 0,
     misses: 0,
     wheel: {
       letters: [],
@@ -115,13 +117,16 @@ export function createRuntimeState(saveState) {
       active: false,
       indices: [],
       points: [],
+      touchPoint: null,
       candidateWord: ""
     },
     hint: {
       remaining: 0,
       cooldownMs: 0,
       revealCellKey: null,
-      revealMs: 0
+      revealMs: 0,
+      activeClue: "",
+      targetWordId: null
     },
     roundClearRewards: [],
     pendingRoundPanel: null,
@@ -133,7 +138,6 @@ export function createRuntimeState(saveState) {
       celebrations: [],
       laneBoost: 0,
       lanePhase: 0,
-      timerPulse: 0,
       successPulse: 0
     },
     saveState

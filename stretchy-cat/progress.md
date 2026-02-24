@@ -347,3 +347,74 @@ Validation (this pass):
 
 TODO / follow-up suggestions:
 - If requested, add a user-facing music toggle/mute control in HUD/menu while preserving this default BGM behavior.
+
+User request pass (timer visual cue + placement):
+- Request: make non-moving timer visually "frozen", add a clear clock grow cue when ticking starts, and move the timer to a more obvious spot next to gameplay.
+- `App.tsx`:
+  - Added timer cue state: `isTimerKickAnimating` toggled when `timerStarted` flips to true.
+  - Added computed timer modes (`isTimerFrozen`, running/frozen/kick className composition).
+  - Moved timer badge out of the top HUD into a new main-area wrapper (`sparkli-play-area`) so it sits beside the board.
+  - Added dynamic timer subtitle text:
+    - frozen: `FROZEN - MOVE SPARKLI`
+    - running: `TIME LEFT`
+- `index.css`:
+  - Added `sparkli-play-area` two-column layout (timer + board) with responsive collapse to one column on smaller screens.
+  - Added timer state visuals:
+    - frozen: icy tint + frosted overlay + subdued freeze pulse.
+    - running: subtle tick pulse.
+    - start cue: pronounced badge/icon grow animation (`timerBadgeKick`, `timerKick`) when ticking starts.
+  - Updated HUD side-stack layout since timer is no longer in the top-right stack.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright runs (local dev server):
+  - Frozen-state capture:
+    - `node scripts/web_game_playwright_client.js --url http://127.0.0.1:5175 --click-selector "#menu-start-button" --actions-file scripts/menu-idle-actions.json --iterations 1 --pause-ms 120 --screenshot-dir output/web-game-timer-freeze`
+    - artifacts: `output/web-game-timer-freeze/shot-0.png`, `state-0.json`
+    - state confirms frozen condition (`timerStarted: false`, `timeLeft: 15`).
+  - Running/start capture:
+    - `node scripts/web_game_playwright_client.js --url http://127.0.0.1:5175 --click-selector "#menu-start-button" --actions-json '{"steps":[{"buttons":[],"frames":30},{"buttons":["up"],"frames":1},{"buttons":["left"],"frames":1},{"buttons":["down"],"frames":1},{"buttons":["right"],"frames":1}]}' --iterations 1 --pause-ms 35 --screenshot-dir output/web-game-timer-kick-pulse3`
+    - artifacts: `output/web-game-timer-kick-pulse3/shot-0.png`, `state-0.json`
+    - state confirms timer start (`timerStarted: true`).
+- No `errors-*.json` generated in the new output folders.
+
+Follow-up UI refinement pass (timer + board spacing):
+- Request:
+  1) remove right-side empty area in the board shell,
+  2) make frozen timer look more obviously icy,
+  3) remove explanatory timer text and keep only time + clock label.
+- `App.tsx`:
+  - Timer subtitle changed to static `Clock` (explanatory text removed).
+- `index.css`:
+  - Board shell now shrinks to content (`.sparkli-grid-shell` uses `justify-self: start`, `width: fit-content`, `max-width: 100%`) to remove internal right-side empty space.
+  - Frozen timer style strengthened:
+    - more saturated ice-blue gradient and border,
+    - layered inset/outer icy shadow,
+    - striped frost overlay,
+    - stronger freeze pulse for the clock icon.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright captures:
+  - frozen idle: `output/web-game-timer-freeze-v2/shot-0.png` + `state-0.json` (`timerStarted: false`)
+  - running: `output/web-game-timer-running-v2/shot-0.png` + `state-0.json` (`timerStarted: true`)
+- No `errors-*.json` in these two output folders.
+
+Follow-up layout balance redesign:
+- Request: rebalance the UI since gameplay area felt left-leaning.
+- Implemented a balanced desktop composition in `index.css`:
+  - `sparkli-play-area` now uses a mirrored 3-column stage:
+    - left timer slot,
+    - center board,
+    - right visual counterweight slot.
+  - Board remains in center column (`.sparkli-grid-shell { grid-column: 2; }`).
+  - Timer remains prominent and near the board (`.sparkli-grid-timer { grid-column: 1; }`).
+  - Kept responsive collapse to one column at <=980px to prevent overflow.
+- This keeps the board fully visible and avoids the vertical clipping regression from a stacked timer-over-board variant.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright captures:
+  - frozen: `output/web-game-balance-v3-freeze/shot-0.png` + `state-0.json`
+  - running: `output/web-game-balance-v3-run/shot-0.png` + `state-0.json`
+- No `errors-*.json` in these output folders.

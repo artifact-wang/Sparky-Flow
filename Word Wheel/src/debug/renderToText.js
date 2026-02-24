@@ -16,20 +16,26 @@ export function renderGameToText(state) {
           minWordLength: state.roundConfig.minWordLength,
           maxWordLength: state.roundConfig.maxWordLength,
           targetWords: state.roundConfig.targetWords,
-          minBoardWords: state.roundConfig.minBoardWords,
-          timerSeconds: state.roundConfig.timerSeconds
+          minBoardWords: state.roundConfig.minBoardWords
         }
       : null,
-    timerMs: Math.max(0, Math.round(state.timerMs)),
-    timerMaxMs: Math.round(state.timerMaxMs),
+    theme: state.activeTheme
+      ? {
+          id: state.activeTheme.id,
+          title: state.activeTheme.title,
+          description: state.activeTheme.description
+        }
+      : null,
+    roundElapsedMs: Math.max(0, Math.round(state.roundElapsedMs || 0)),
     score: state.score,
     stars: state.stars,
     streak: state.streak,
     combo: state.combo,
+    hintsUsedThisRound: state.hintsUsedThisRound || 0,
     rules: {
       letterOrder: "strict",
       wordOrder: "any-order",
-      hintPolicy: "manual-only"
+      hintPolicy: "clue-only-manual"
     },
     sequenceRule: "any-order-across-words",
     wordCompletionRule: "strict-letter-order-within-word",
@@ -41,6 +47,8 @@ export function renderGameToText(state) {
       words: state.wordSequence || []
     },
     hintsRemaining: state.hint.remaining,
+    activeClue: state.hint.activeClue || "",
+    hintTargetWordId: state.hint.targetWordId,
     hintCell: state.hint.revealCellKey,
     roundClearRewards: Array.isArray(state.roundClearRewards)
       ? state.roundClearRewards.map((reward) => ({

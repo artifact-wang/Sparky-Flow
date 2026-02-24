@@ -368,3 +368,99 @@ Original prompt: Build Sparky Word Sprint as an iPad touch-first webview word-wh
 - After this pass:
   - g5 seen-duplicate rate: `44.2%`
   - g5 recent-window duplicate rate: `6.5%`
+
+## 2026-02-24 - Theme-Constrained Clue System + Hidden Timer Rewards + Sparkling String Trace
+- Migrated all grade data files (`src/data/grade1..5.json`) to themed schema:
+  - Object shape with `grade`, `themes[]`, `words[]`.
+  - `words[]` entries now include `word`, `clue`, and `labels`.
+  - Expanded exact counts to: g1=200, g2=300, g3=400, g4=500, g5=600.
+- Added data generation helper script: `scripts/build_themed_grade_data.mjs`.
+- Added new validation script: `scripts/validate_themed_pools.mjs`.
+- Updated `package.json` `test:pools` script to run themed validator.
+
+### Runtime / Generation Pipeline
+- Updated `src/generation/wordPools.js`:
+  - Loads new per-grade schema.
+  - Returns normalized `{ grade, entries, themes, themeIndex }`.
+  - Each entry now carries `clue`, `labels`, and `themeIds`.
+- Updated `src/generation/boardGenerator.js`:
+  - `generateRound` now accepts `activeThemeId`, `activeTheme`, and `themeEntries`.
+  - Round generation can be theme-constrained by using `themeEntries` source.
+  - Board words now carry clue metadata (`clue`, `labels`, `themeIds`).
+  - Round payload now includes `theme`.
+
+### Gameplay / State
+- Removed visible timer + timeout gameplay paths.
+- Added hidden elapsed tracking (`roundElapsedMs`) and per-round hint usage counter (`hintsUsedThisRound`).
+- Reworked star scoring to be timer-independent:
+  - 3 stars: zero misses and zero hints used that round.
+  - 2 stars: misses <= 2.
+  - 1 star otherwise.
+- Added hidden speed hint rewards at round clear (exclusive):
+  - <=30s: +3 hints.
+  - <=60s: +1 hint.
+  - >60s: +0.
+- Preserved flawless reward (+2 hints) and allowed stacking with hidden speed reward.
+
+### Hints
+- Replaced auto-solve hint behavior with clue-only behavior:
+  - Hint now selects a random unsolved board word.
+  - Consumes one hint, sets `activeClue`, and does not reveal/solve letters.
+  - Clue clears when the targeted word is solved.
+
+### UI / HUD
+- Updated `index.html` and `src/styles.css`:
+  - Removed timer bar.
+  - Added top HUD theme chip + persistent clue bar.
+  - Added responsive layout updates for smaller screens.
+- Updated `src/game/uiOverlay.js`:
+  - Removed timer-fill update logic.
+  - Added HUD updates for active theme and active clue.
+
+### Sparkling String Trace
+- Added `trace.touchPoint` to runtime state.
+- Updated trace handling in `src/main.js` to maintain live touch point during tracing.
+- Replaced trace rendering in `src/game/renderer.js`:
+  - Draws connected rainbow/sparkle string segments in selected letter order.
+  - Connects selected letter anchors to current touch point.
+  - Uses sparkle-only look (no plain white touch band).
+
+### Debug / Validation updates
+- Updated `src/debug/renderToText.js`:
+  - Removed visible timer fields.
+  - Added `theme`, `roundElapsedMs`, `activeClue`, `hintTargetWordId`, `hintsUsedThisRound`.
+- Updated `scripts/validate_generation.mjs` to read themed schema and verify theme-constrained rounds.
+
+### Audio / Cleanup
+- Removed timeout SFX method (`playTimeout`) and timeout flow usage.
+- Removed timer pulse effect dependency.
+
+### Verification
+- `npm run test:pools` passed with exact word counts and themed schema checks.
+- `ROUNDS=80 npm test` passed across grades 1-5 with themed generation.
+- Playwright artifacts:
+  - `output/web-game-theme-clue-trace/shot-0.png` + `state-0.json`
+    - Verified themed round metadata and connected sparkle-string trace rendering.
+  - `output/web-game-theme-hint/state-0.json`
+    - Verified clue-only hint behavior (`hintsUsedThisRound: 1`, `activeClue` set, no auto-solve).
+  - `output/web-game-theme-roundclear/state-0.json`
+    - Verified hidden speed reward + flawless stacking (`Lightning Finish +3`, `Flawless +2`, hints increased accordingly).
+
+### TODO / Follow-up
+- Improve clue quality from generic theme-based clue templates to more word-specific dictionary-style clues.
+- Optionally add an explicit debug/test hook (`__sparky.useHint`) for deterministic hint automation without UI click targeting.
+
+## 2026-02-24 - Theme Purity + Kid-Simple Word Clues
+- Enforced **single-theme purity** for each round:
+  - Pools now index each word into exactly one `primaryThemeId` (`src/generation/wordPools.js`).
+  - Round generation now rejects any board containing a word whose `primaryThemeId` differs from the active round theme (`src/generation/boardGenerator.js`).
+  - Validation updated to check `primaryThemeId` rather than label inclusion (`scripts/validate_generation.mjs`).
+- Rewrote hint clue text to be **per-word** and **very simple**:
+  - Added kid-friendly, word-specific clue leads for all non-`everyday-life` themed words (animals/home/nature/etc.).
+  - All clues still include an easy spelling hint: starts-with letter + total letters.
+  - Removed overly-broad substring theme heuristics that misclassified words like `already`/`ready`.
+  - Regenerated grade data with updated labels and clues (`scripts/build_themed_grade_data.mjs`).
+
+### Re-Verification
+- `npm run test:pools` passed.
+- `ROUNDS=40 npm test` passed (theme leakage checks included).

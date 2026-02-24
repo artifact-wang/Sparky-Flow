@@ -139,11 +139,6 @@ export class AudioSystem {
     this.playTone({ freq: 1180, type: "triangle", duration: 0.17, volume: 0.1 });
   }
 
-  playTimeout() {
-    this.playTone({ freq: 280, type: "sawtooth", duration: 0.2, volume: 0.095 });
-    this.playTone({ freq: 238, type: "sawtooth", duration: 0.24, volume: 0.08 });
-  }
-
   // Backward-compatible aliases.
   playTap() {
     this.playTraceAppend();

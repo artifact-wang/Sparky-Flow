@@ -1,7 +1,6 @@
 import { AudioSystem } from "./game/audio.js";
 import {
   pushTrailPoint,
-  pulseTimer,
   shakeWheel,
   spawnSuccessBanner,
   spawnGrandCelebration,
@@ -93,6 +92,25 @@ function rememberRoundWords(grade, words) {
   }
 }
 
+function getRecentThemesForGrade(grade) {
+  if (!grade) {
+    return [];
+  }
+  if (!state.recentThemesByGrade[grade]) {
+    state.recentThemesByGrade[grade] = [];
+  }
+  return state.recentThemesByGrade[grade];
+}
+
+function rememberRoundTheme(grade, themeId) {
+  if (!grade || !themeId) {
+    return;
+  }
+  const recent = getRecentThemesForGrade(grade).filter((entry) => entry !== themeId);
+  recent.push(themeId);
+  state.recentThemesByGrade[grade] = recent.slice(-2);
+}
+
 function randomSalt() {
   if (window.crypto && typeof window.crypto.getRandomValues === "function") {
     const bytes = new Uint32Array(1);
@@ -165,6 +183,7 @@ function resetTrace() {
   state.trace.active = false;
   state.trace.indices = [];
   state.trace.points = [];
+  state.trace.touchPoint = null;
   state.trace.candidateWord = "";
 }
 
@@ -188,11 +207,10 @@ function syncHud() {
 }
 
 function awardStarsForRound() {
-  const ratio = state.timerMaxMs > 0 ? state.timerMs / state.timerMaxMs : 0;
-  if (ratio > 0.62 && state.misses <= 1) {
+  if (state.misses === 0 && state.hintsUsedThisRound === 0) {
     return 3;
   }
-  if (ratio > 0.32 && state.misses <= 3) {
+  if (state.misses <= 2) {
     return 2;
   }
   return 1;
@@ -205,14 +223,9 @@ function buildRoundConfig(baseConfig, roundSerial) {
   return {
     ...baseConfig,
     difficultyTier: tier,
-    timerSeconds: Math.max(
-      Math.round(baseConfig.timerSeconds * 0.7),
-      Math.round(baseConfig.timerSeconds - tier * 1.6)
-    ),
     targetWords: Math.min(baseConfig.targetWords + boardBoost, baseConfig.targetWords + 2),
     minBoardWords: Math.min(baseConfig.minBoardWords + boardBoost, baseConfig.minBoardWords + 2),
-    hintBudget: Math.max(1, baseConfig.hintBudget - Math.floor(tier / 4)),
-    streakBonusMs: Math.max(520, baseConfig.streakBonusMs - tier * 34)
+    hintBudget: Math.max(1, baseConfig.hintBudget - Math.floor(tier / 4))
   };
 }
 
@@ -255,8 +268,8 @@ function pickHintTargetWord() {
     return null;
   }
 
-  // Any unsolved word is valid now; hints can complete whichever remains first.
-  return unsolved[0];
+  const randomIndex = Math.floor(sessionRng() * unsolved.length);
+  return unsolved[randomIndex] || unsolved[0];
 }
 
 function useHintWord() {
@@ -275,25 +288,20 @@ function useHintWord() {
 
   state.hint.remaining -= 1;
   state.hint.cooldownMs = Math.max(2400, 7600 - state.roundDifficultyTier * 320);
-  state.hint.revealCellKey = `${target.x},${target.y}`;
-  state.hint.revealMs = 1200;
-
-  solveWord(target.id, { fromHint: true });
+  state.hint.activeClue = target.clue || "A common everyday word.";
+  state.hint.targetWordId = target.id;
+  state.hintsUsedThisRound += 1;
+  state.hint.revealCellKey = null;
+  state.hint.revealMs = 0;
+  spawnWordFlyup(
+    state,
+    "Clue shown!",
+    renderer.getLayout().wheelCenter.x,
+    renderer.getLayout().wheelCenter.y - renderer.getLayout().wheelRadius - 24,
+    "#56c6ff"
+  );
+  audio.playHintUse();
   return true;
-}
-
-function showTimeoutModal() {
-  state.modal = {
-    type: "timeout",
-    title: "Time Up",
-    body: "Try this round again and build a longer streak."
-  };
-  ui.showModal({
-    title: "Time Up",
-    body: "Keep going. Spark can still clear this board.",
-    primaryLabel: "Retry Round",
-    secondaryLabel: "Grade Menu"
-  });
 }
 
 function showRoundClearModal(starGain, rewardItems = []) {
@@ -321,15 +329,6 @@ function buildHintRewardSummary(rewardItems) {
   }
   const labels = rewardItems.map((reward) => `${reward.title}: +${reward.hints} hint${reward.hints === 1 ? "" : "s"}`);
   return labels.join(" • ");
-}
-
-function revealTimeoutAnswers() {
-  if (!state.board || !Array.isArray(state.board.words)) {
-    return [];
-  }
-
-  state.board.revealAllAnswers = true;
-  return state.board.words.filter((word) => !word.solved).map((word) => word.text.toUpperCase());
 }
 
 function showRoundPreview({ type, title, body, payload = {} }) {
@@ -360,12 +359,6 @@ function openPendingRoundPanel() {
 
   if (pending.type === "round-clear") {
     showRoundClearModal(pending.starGain, pending.rewardItems || []);
-    return;
-  }
-
-  if (pending.type === "timeout") {
-    setMode("timeout");
-    showTimeoutModal();
   }
 }
 
@@ -401,6 +394,10 @@ function solveWord(wordId, options = {}) {
   state.wordSequenceIndex = state.board.solvedCount;
   state.currentGoalWord = null;
   animateSolvedWordCells(boardWord, fromHint ? "hint" : "solve");
+  if (state.hint.targetWordId === boardWord.id) {
+    state.hint.targetWordId = null;
+    state.hint.activeClue = "";
+  }
 
   const basePoints = config.scoreBase + boardWord.text.length * config.wordLengthBonus + state.combo * 2;
   const points = fromHint ? Math.max(3, Math.floor(basePoints * 0.4)) : basePoints;
@@ -473,10 +470,7 @@ function solveWord(wordId, options = {}) {
   }
 
   if (!fromHint && state.combo >= 3) {
-    const bonusMs = config.streakBonusMs;
-    state.timerMs = Math.min(state.timerMaxMs, state.timerMs + bonusMs);
-    pulseTimer(state);
-    spawnWordFlyup(state, `+${Math.round(bonusMs / 1000)}s`, center.x, center.y - 48, "#35aef0");
+    spawnWordFlyup(state, "Combo!", center.x, center.y - 48, "#35aef0");
     spawnRipple(state, {
       x: renderer.getLayout().wheelCenter.x,
       y: renderer.getLayout().wheelCenter.y,
@@ -495,15 +489,15 @@ function solveWord(wordId, options = {}) {
     );
 
     const rewardItems = [];
-    const finishedWithHalfTimeLeft = state.timerMaxMs > 0 && state.timerMs >= state.timerMaxMs * 0.5;
-    if (finishedWithHalfTimeLeft) {
+    const hiddenSpeedHintReward = state.roundElapsedMs <= 30000 ? 3 : state.roundElapsedMs <= 60000 ? 1 : 0;
+    if (hiddenSpeedHintReward > 0) {
       rewardItems.push({
-        title: "Speed Finish",
-        hints: 1,
+        title: state.roundElapsedMs <= 30000 ? "Lightning Finish" : "Fast Finish",
+        hints: hiddenSpeedHintReward,
         tone: "speed"
       });
       spawnSuccessBanner(state, {
-        text: "Speed Hint +1",
+        text: `Speed +${hiddenSpeedHintReward} Hints`,
         color: "#4fbfff",
         accent: "#e1f6ff",
         life: 1280,
@@ -707,6 +701,7 @@ function beginTrace(nodeIndex, point) {
   state.trace.active = true;
   state.trace.indices = [nodeIndex];
   state.trace.points = [point];
+  state.trace.touchPoint = point;
   state.trace.candidateWord = candidateWordFromIndices(state.trace.indices);
   pushTrailPoint(state, point.x, point.y);
   audio.playTraceStart();
@@ -720,6 +715,7 @@ function appendTrace(nodeIndex, point) {
   const last = state.trace.indices[state.trace.indices.length - 1];
   if (nodeIndex === last) {
     state.trace.points.push(point);
+    state.trace.touchPoint = point;
     pushTrailPoint(state, point.x, point.y);
     return;
   }
@@ -730,6 +726,7 @@ function appendTrace(nodeIndex, point) {
 
   state.trace.indices.push(nodeIndex);
   state.trace.points.push(point);
+  state.trace.touchPoint = point;
   state.trace.candidateWord = candidateWordFromIndices(state.trace.indices);
   pushTrailPoint(state, point.x, point.y);
   audio.playTraceAppend();
@@ -740,6 +737,7 @@ function traceMove(point) {
     return;
   }
   state.trace.points.push(point);
+  state.trace.touchPoint = point;
   if (state.trace.points.length > 80) {
     state.trace.points.shift();
   }
@@ -780,6 +778,7 @@ function appendKeyboardLetter(letter) {
   const node = renderer.getLayout().wheelNodes[index];
   if (node) {
     state.trace.points.push({ x: node.x, y: node.y });
+    state.trace.touchPoint = { x: node.x, y: node.y };
     pushTrailPoint(state, node.x, node.y);
   }
   audio.playTraceAppend();
@@ -797,6 +796,32 @@ function removeLastTraceLetter() {
   }
 }
 
+function listEligibleThemes(pool, config, grade) {
+  if (!pool || !Array.isArray(pool.themes) || !(pool.themeIndex instanceof Map)) {
+    return [];
+  }
+
+  const minThemeWords = Math.max(18, config.targetWords * 4);
+  const recentThemes = new Set(getRecentThemesForGrade(grade));
+  const eligibleRaw = pool.themes.filter((themeEntry) => {
+    const entries = pool.themeIndex.get(themeEntry.id) || [];
+    return entries.length >= minThemeWords;
+  });
+  const preferred = eligibleRaw.filter((themeEntry) => themeEntry.id !== "everyday-life");
+  const eligible = preferred.length ? preferred : eligibleRaw;
+
+  eligible.sort((a, b) => {
+    const aRecent = recentThemes.has(a.id) ? 1 : 0;
+    const bRecent = recentThemes.has(b.id) ? 1 : 0;
+    if (aRecent !== bRecent) {
+      return aRecent - bRecent;
+    }
+    return a.title.localeCompare(b.title);
+  });
+
+  return eligible;
+}
+
 async function startRound() {
   if (!state.grade) {
     return;
@@ -809,25 +834,72 @@ async function startRound() {
   const roundIndex = state.roundSerial;
   state.roundSerial += 1;
 
-  const round = generateRound({
-    grade: state.grade,
-    roundIndex,
-    sessionSalt: state.sessionSalt,
-    pool,
-    config,
-    seenWords: Array.from(gradeMemory.seenWords),
-    recentWords: gradeMemory.recentWords,
-    wordUsage: Object.fromEntries(gradeMemory.wordUseCounts)
-  });
+  const themeCandidates = listEligibleThemes(pool, config, state.grade);
+  let round = null;
+  let selectedTheme = null;
+  let selectedThemeEntries = null;
+
+  for (let i = 0; i < themeCandidates.length; i += 1) {
+    const candidateTheme = themeCandidates[i];
+    const candidateEntries = pool.themeIndex.get(candidateTheme.id) || [];
+    try {
+      round = generateRound({
+        grade: state.grade,
+        roundIndex,
+        sessionSalt: state.sessionSalt,
+        pool,
+        activeThemeId: candidateTheme.id,
+        activeTheme: candidateTheme,
+        themeEntries: candidateEntries,
+        config,
+        seenWords: Array.from(gradeMemory.seenWords),
+        recentWords: gradeMemory.recentWords,
+        wordUsage: Object.fromEntries(gradeMemory.wordUseCounts)
+      });
+      selectedTheme = candidateTheme;
+      selectedThemeEntries = candidateEntries;
+      break;
+    } catch (error) {
+      // Try the next candidate theme before falling back to the full pool.
+    }
+  }
+
+  if (!round) {
+    const fallbackTheme =
+      pool.themes.find((themeEntry) => themeEntry.id === "everyday-life") || pool.themes[0] || null;
+    const fallbackEntries =
+      (fallbackTheme && (pool.themeIndex.get(fallbackTheme.id) || []).length
+        ? pool.themeIndex.get(fallbackTheme.id)
+        : pool.entries) || [];
+    round = generateRound({
+      grade: state.grade,
+      roundIndex,
+      sessionSalt: state.sessionSalt,
+      pool,
+      activeThemeId: fallbackTheme?.id || null,
+      activeTheme: fallbackTheme,
+      themeEntries: fallbackEntries,
+      config,
+      seenWords: Array.from(gradeMemory.seenWords),
+      recentWords: gradeMemory.recentWords,
+      wordUsage: Object.fromEntries(gradeMemory.wordUseCounts)
+    });
+    selectedTheme = fallbackTheme;
+    selectedThemeEntries = fallbackEntries;
+  }
 
   state.roundIndex = round.roundIndex;
   state.round = round;
   state.roundConfig = config;
   state.roundDifficultyTier = config.difficultyTier || 0;
+  state.activeTheme = round.theme || selectedTheme;
+  if (state.activeTheme?.id) {
+    rememberRoundTheme(state.grade, state.activeTheme.id);
+  }
   state.board = round.board;
   state.board.revealAllAnswers = false;
   state.roundWordPoolMeta = {
-    gradePoolSize: pool.length,
+    gradePoolSize: pool.entries.length,
     recentWordReuseBlocked: false,
     freshCrosswordAvailable: false,
     freshnessFallbackUsed: false,
@@ -838,13 +910,15 @@ async function startRound() {
     seenWordsCount: gradeMemory.seenWords.size,
     recentWordsCount: gradeMemory.recentWords.length,
     usedRecentWords: 0,
+    selectedThemeId: state.activeTheme?.id || null,
+    selectedThemeWordCount: Array.isArray(selectedThemeEntries) ? selectedThemeEntries.length : 0,
     ...round.wordPoolMeta
   };
   state.wordSequence = buildWordSequence(state.board);
   state.wordSequenceIndex = 0;
   state.currentGoalWord = null;
-  state.timerMaxMs = round.timerSeconds * 1000;
-  state.timerMs = state.timerMaxMs;
+  state.roundElapsedMs = 0;
+  state.hintsUsedThisRound = 0;
   state.wheel.letters = round.wheelLetters.slice();
   state.wheel.roundClearSpin = false;
   state.wheel.spinVelocity = 0;
@@ -858,6 +932,8 @@ async function startRound() {
   state.hint.cooldownMs = 0;
   state.hint.revealCellKey = null;
   state.hint.revealMs = 0;
+  state.hint.activeClue = "";
+  state.hint.targetWordId = null;
   state.roundClearRewards = [];
   state.pendingRoundPanel = null;
   state.misses = 0;
@@ -886,9 +962,12 @@ async function startGrade(grade) {
   state.combo = 0;
   state.roundConfig = null;
   state.roundDifficultyTier = 0;
+  state.activeTheme = null;
   state.wordSequence = [];
   state.wordSequenceIndex = 0;
   state.currentGoalWord = null;
+  state.roundElapsedMs = 0;
+  state.hintsUsedThisRound = 0;
   state.roundWordPoolMeta = {
     gradePoolSize: 0,
     recentWordReuseBlocked: false,
@@ -904,6 +983,7 @@ async function startGrade(grade) {
   };
   state.wheel.roundClearSpin = false;
   state.pendingRoundPanel = null;
+  state.recentThemesByGrade[grade] = [];
   const oneTimeSeed = seedOverride;
   seedOverride = null;
   state.sessionSalt = Number.isFinite(oneTimeSeed) ? oneTimeSeed : randomSalt();
@@ -939,12 +1019,17 @@ function goHome() {
   state.grade = null;
   state.round = null;
   state.board = null;
+  state.activeTheme = null;
   state.wordSequence = [];
   state.wordSequenceIndex = 0;
   state.currentGoalWord = null;
+  state.roundElapsedMs = 0;
+  state.hintsUsedThisRound = 0;
   state.wheel.roundClearSpin = false;
   state.wheel.spinVelocity = 0;
   state.pendingRoundPanel = null;
+  state.hint.activeClue = "";
+  state.hint.targetWordId = null;
   resetTrace();
   ui.showMenu();
   ui.hideRoundPreview();
@@ -952,25 +1037,6 @@ function goHome() {
   ui.setHudVisible(false);
   updateURLGrade(null);
   syncHud();
-}
-
-function onTimeout() {
-  if (state.mode !== "playing") {
-    return;
-  }
-  state.timerMs = 0;
-  setMode("timeout-preview");
-  audio.playTimeout();
-  const answers = revealTimeoutAnswers();
-  const answersLabel = answers.length ? `Answers: ${answers.join(", ")}` : "Answers are shown on the board.";
-  showRoundPreview({
-    type: "timeout",
-    title: "Time Up",
-    body: answersLabel,
-    payload: {
-      answers
-    }
-  });
 }
 
 ui.bind({
@@ -996,10 +1062,6 @@ ui.bind({
     }
     if (state.modal.type === "round-clear") {
       await startRound();
-      return;
-    }
-    if (state.modal.type === "timeout") {
-      await restartRound();
     }
   },
   onModalSecondary: () => {
@@ -1022,11 +1084,7 @@ const input = createInputController({
 
 const loop = createGameLoop((dtMs) => {
   if (state.mode === "playing") {
-    state.timerMs -= dtMs;
-    if (state.timerMs <= 0) {
-      onTimeout();
-    }
-
+    state.roundElapsedMs += dtMs;
     audio.setMusicIntensity(Math.min(1, state.combo / 7));
   } else {
     audio.setMusicIntensity(0.1);

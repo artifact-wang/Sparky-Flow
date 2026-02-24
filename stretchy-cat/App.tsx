@@ -73,6 +73,7 @@ const App: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<number | null>(GAME_CONSTANTS.INITIAL_TIME_SECONDS);
   const [stats, setStats] = useState<RunStats>(DEFAULT_RUN_STATS);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isTimerKickAnimating, setIsTimerKickAnimating] = useState(false);
 
   const collectedMap = useRef<Set<string>>(new Set());
   const isTransitioningRef = useRef(false);
@@ -340,6 +341,13 @@ const App: React.FC = () => {
   }, [hasStarted, isTransitioning, gameState.isWon, timeLeft, timerStarted, isPaused]);
 
   useEffect(() => {
+    if (!timerStarted) return;
+    setIsTimerKickAnimating(true);
+    const kickTimer = window.setTimeout(() => setIsTimerKickAnimating(false), 520);
+    return () => window.clearTimeout(kickTimer);
+  }, [timerStarted]);
+
+  useEffect(() => {
     if (timeLeft === 0 && !gameState.isWon && hasStarted && !isTransitioning && !gameResult) {
       setGameResult('lose');
     }
@@ -452,6 +460,15 @@ const App: React.FC = () => {
 
   const levelProgress = level ? Math.min(100, Math.round((gameState.path.length / level.targetCount) * 100)) : 0;
   const formattedTimer = timeLeft !== null ? `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}` : '--:--';
+  const isTimerFrozen = Boolean(hasStarted && !timerStarted && !isTransitioning && !gameState.isWon && !gameResult && timeLeft !== null);
+  const timerBadgeClassName = [
+    'sparkli-timer-badge',
+    'sparkli-grid-timer',
+    isTimerFrozen ? 'is-frozen' : 'is-running',
+    isTimerKickAnimating ? 'is-kick' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   useEffect(() => {
     window.render_game_to_text = () => {
@@ -573,15 +590,6 @@ const App: React.FC = () => {
             </div>
 
             <div className="sparkli-side-stack">
-              {timeLeft !== null && (
-                <div className="sparkli-timer-badge" aria-live="polite">
-                  <TimerIcon className="sparkli-timer-icon" />
-                  <div>
-                    <strong>{formattedTimer}</strong>
-                    <span>Time Left</span>
-                  </div>
-                </div>
-              )}
               <button
                 type="button"
                 onClick={() => setIsInfoOpen(true)}
@@ -594,27 +602,39 @@ const App: React.FC = () => {
           </header>
 
           <main className="sparkli-main" aria-live="polite">
-            <div className={`sparkli-grid-shell ${isTransitioning ? 'is-transitioning' : ''}`}>
-              <Grid
-                level={level}
-                path={gameState.path}
-                collectedMap={collectedMap.current}
-                timeBonuses={timeBonuses}
-                isTreatActive={isTreatActive}
-                isYarnActive={isYarnActive}
-                levelStartTime={levelStartTime}
-                onCellMouseDown={p => {
-                  if (!isTransitioning && !isWinProcessed.current && !isPaused) {
-                    setGameState(prev => ({ ...prev, isDragging: true }));
-                    handleCellInteraction(p);
-                  }
-                }}
-                onCellMouseEnter={p => {
-                  if (gameState.isDragging && !isTransitioning && !isWinProcessed.current && !isPaused) {
-                    handleCellInteraction(p);
-                  }
-                }}
-              />
+            <div className="sparkli-play-area">
+              {timeLeft !== null && (
+                <div className={timerBadgeClassName} aria-live="polite">
+                  <TimerIcon className="sparkli-timer-icon" />
+                  <div>
+                    <strong>{formattedTimer}</strong>
+                    <span>Clock</span>
+                  </div>
+                </div>
+              )}
+
+              <div className={`sparkli-grid-shell ${isTransitioning ? 'is-transitioning' : ''}`}>
+                <Grid
+                  level={level}
+                  path={gameState.path}
+                  collectedMap={collectedMap.current}
+                  timeBonuses={timeBonuses}
+                  isTreatActive={isTreatActive}
+                  isYarnActive={isYarnActive}
+                  levelStartTime={levelStartTime}
+                  onCellMouseDown={p => {
+                    if (!isTransitioning && !isWinProcessed.current && !isPaused) {
+                      setGameState(prev => ({ ...prev, isDragging: true }));
+                      handleCellInteraction(p);
+                    }
+                  }}
+                  onCellMouseEnter={p => {
+                    if (gameState.isDragging && !isTransitioning && !isWinProcessed.current && !isPaused) {
+                      handleCellInteraction(p);
+                    }
+                  }}
+                />
+              </div>
             </div>
           </main>
 

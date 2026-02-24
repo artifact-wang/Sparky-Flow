@@ -264,3 +264,86 @@ Validation (this pass):
 - `npm run build`: PASS.
 - Playwright capture (menu -> gameplay): `output/web-game-sparkli-rotate-scale/shot-0.png` + `state-0.json` (`mode: "playing"`).
 - No generated `errors-*.json` in `output/web-game-sparkli-rotate-scale`.
+
+User request pass (3 asset SFX + infinite levels + post-12 clock rarity):
+- Replaced current in-game SFX wiring with asset SFX from `assets/`:
+  - `Clock_click.wav` triggers on chrono beacon pickup (`CellType.TREAT`).
+  - `Shield.wav` triggers on scout badge pickup (`CellType.YARN`).
+  - `Flag.wav` triggers on level completion (`CellType.SAUCER` win condition per level).
+- Removed old `/media/audio/...` SFX hooks from interaction/preload flow; preload cache now warms only the 3 asset SFX.
+- Extended progression to infinite levels by removing the terminal level gate and always incrementing level index after a room is completed.
+- Updated HUD/footer level labels from capped format (`Level x/12`) to uncapped (`Level x`) to match infinite progression.
+- Added configurable collectible generation constants and applied level-based clock rarity in `logic/levelGenerator.ts`:
+  - base clock collectible chance remains 0.8 among spawned collectibles.
+  - after level 12 (`levelIndex > 12`), clock chance is halved to 0.4.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright run against local dev server:
+  - command used: `node scripts/web_game_playwright_client.js --url http://127.0.0.1:5173 --click-selector \"#menu-start-button\" --actions-file scripts/test-actions-sweep.json --iterations 3 --pause-ms 250 --screenshot-dir output/web-game-infinite-sfx`
+  - artifacts: `output/web-game-infinite-sfx/shot-0.png..shot-2.png`, `state-0.json..state-2.json`
+  - no `errors-*.json` generated.
+- Visual check: latest shots show gameplay HUD using uncapped level label (`Level 1`), and interaction/rendering remains stable.
+
+TODO / follow-up suggestions:
+- If requested, add a small deterministic dev/test hook to force level index (e.g., jump to level 13) for direct in-browser verification of post-12 clock rarity behavior.
+- If requested, add explicit non-collectible movement SFX using asset variants (currently collectible + goal events are mapped to the three new asset SFX).
+
+Follow-up fix (user-reported post-12 map plateau):
+- Root cause: board sizing was still capped by `MAX_GRID_SIZE: 7`, so map expansion stopped after level 12 despite infinite level index.
+- Additional risk found: simply removing the cap with DFS path search causes heavy stalls/failures at larger target counts.
+
+Implemented changes:
+- `logic/levelGenerator.ts`
+  - Kept original 1-12 progression behavior as baseline trend.
+  - Added post-12 growth model:
+    - grid size: +1 every 2 levels after level 12 (`POST_LEVEL_GRID_GROWTH_INTERVAL`).
+    - density: continues from level-12 density and ramps further (`POST_LEVEL_TARGET_DENSITY_INCREMENT`) up to 0.985.
+  - Added deterministic post-12 route generator (serpentine path with random rotate/mirror/reverse transforms) so larger boards are always generated reliably.
+  - Reused shared finalization logic for cell marking, collectibles, and metadata.
+  - Preserved clock rarity rule: after level 12, clock chance is halved.
+  - DFS remains in place for <=12 levels (existing feel preserved), with deterministic fallback replacing the old 4x4 fallback.
+- `constants.ts`
+  - Added: `POST_LEVEL_GRID_GROWTH_INTERVAL`, `POST_LEVEL_TARGET_DENSITY_INCREMENT`, `POST_LEVEL_TARGET_DENSITY_MAX`.
+- `components/Grid.tsx`
+  - Updated tile/gap sizing to fit larger boards better:
+    - adaptive gap ratio for larger dimensions,
+    - lower minimum tile size,
+    - fit loop accounting for gaps to reduce overflow as dimensions climb.
+
+Post-12 growth profile (derived from current constants):
+- L12: size 7, density 0.860, target 42
+- L13: size 8, density 0.880, target 56
+- L15: size 9, density 0.920, target 74
+- L17: size 10, density 0.960, target 96
+- L19: size 11, density 0.985, target 119
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright smoke run:
+  - `node scripts/web_game_playwright_client.js --url http://127.0.0.1:5173 --click-selector "#menu-start-button" --actions-file scripts/test-actions-sweep.json --iterations 2 --pause-ms 250 --screenshot-dir output/web-game-level-growth-fix`
+  - Artifacts: `output/web-game-level-growth-fix/shot-0.png`, `shot-1.png`, states.
+  - No `errors-*.json` generated.
+
+User request pass (in-game BGM from asset):
+- Request: use `assets/BGM.mp3` as in-game background music.
+- Updated `App.tsx`:
+  - Imported `BGM.mp3`.
+  - Extended audio hook usage to include `playBackground` and `stopAll`.
+  - Added `BGM.mp3` to audio preload list.
+  - Start looping BGM (`volume: 0.35`) when a run starts (`startNewRun`).
+  - Stop all audio when returning to main menu (`returnToMenu`) so BGM is in-game only.
+
+Validation (this pass):
+- `npm run build`: PASS.
+- Playwright verification using local client script:
+  - `node scripts/web_game_playwright_client.js --url http://127.0.0.1:5173 --click-selector "#menu-start-button" --actions-file "/Users/danielwang/.codex/skills/develop-web-game/references/action_payloads.json" --iterations 3 --pause-ms 250 --screenshot-dir output/web-game-bgm`
+  - artifacts: `output/web-game-bgm/shot-0.png..shot-2.png`, `state-0.json..state-2.json`
+  - no `errors-*.json` generated.
+- Additional movement regression check:
+  - `node scripts/web_game_playwright_client.js --url http://127.0.0.1:5173 --click-selector "#menu-start-button" --actions-json '{"steps":[{"buttons":["right"],"frames":6},{"buttons":[],"frames":4},{"buttons":["down"],"frames":6}]}' --iterations 2 --pause-ms 250 --screenshot-dir output/web-game-bgm-move`
+  - artifacts: `output/web-game-bgm-move/shot-0.png`, `shot-1.png`, `state-0.json`, `state-1.json`
+  - state confirms progression (`pathLength` and score increase), and no `errors-*.json` generated.
+
+TODO / follow-up suggestions:
+- If requested, add a user-facing music toggle/mute control in HUD/menu while preserving this default BGM behavior.

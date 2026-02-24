@@ -14,9 +14,12 @@ import InfoDialog from './components/InfoDialog';
 import { GAME_CONSTANTS } from './constants';
 import { useKeyboardControls } from './hooks/useKeyboardControls';
 import useAudio from './services/audioService';
-import { getPath } from './utils/path';
 import { InfoIcon, TimerIcon } from './components/Icons';
 import { SparkliStarsMark, SparkliWordmark } from './components/BrandMarks';
+import clockSfx from './assets/Clock_click.wav';
+import shieldSfx from './assets/Shield.wav';
+import flagSfx from './assets/Flag.wav';
+import bgmTrack from './assets/BGM.mp3';
 
 type RunResult = 'win' | 'lose' | 'quit';
 
@@ -84,15 +87,8 @@ const App: React.FC = () => {
 
   const isPaused = false;
 
-  const { playForeground, preloadCache } = useAudio();
-  const audioFiles = [
-    getPath('/media/audio/sfx/stretchycat/backspace.mp3'),
-    getPath('/media/audio/sfx/stretchycat/stretchspace.mp3'),
-    getPath('/media/audio/sfx/stretchycat/YarnReward.mp3'),
-    getPath('/media/audio/sfx/stretchycat/FishReward.mp3'),
-    getPath('/media/audio/sfx/stretchycat/goal.mp3'),
-    getPath('/media/audio/sfx/global/win.mp3'),
-  ];
+  const { playBackground, playForeground, preloadCache, stopAll } = useAudio();
+  const audioFiles = [clockSfx, shieldSfx, flagSfx, bgmTrack];
 
   useEffect(() => {
     const parent = document.getElementById('puzzle-game-container');
@@ -208,6 +204,7 @@ const App: React.FC = () => {
   );
 
   const startNewRun = useCallback(() => {
+    playBackground(bgmTrack, 0.35);
     runLoggedRef.current = false;
     setHasStarted(true);
     setIsInfoOpen(false);
@@ -224,7 +221,7 @@ const App: React.FC = () => {
     setIsTreatActive(true);
     setIsYarnActive(true);
     setGameState(initialGameState);
-  }, []);
+  }, [playBackground]);
 
   const handleFullReset = useCallback(() => {
     runLoggedRef.current = false;
@@ -252,6 +249,7 @@ const App: React.FC = () => {
   }, [levelIndex, initLevel]);
 
   const returnToMenu = useCallback(() => {
+    stopAll();
     if (hasStarted && !gameResult && (gameState.score > 0 || levelIndex > 1)) {
       recordRun('quit', gameState.score, levelIndex);
     }
@@ -264,7 +262,7 @@ const App: React.FC = () => {
     setIsTransitioning(false);
     isTransitioningRef.current = false;
     isWinProcessed.current = false;
-  }, [hasStarted, gameResult, gameState.score, levelIndex, recordRun]);
+  }, [hasStarted, gameResult, gameState.score, levelIndex, recordRun, stopAll]);
 
   const restartCurrentLevel = () => {
     if (!level) return;
@@ -373,7 +371,6 @@ const App: React.FC = () => {
       if (!isAdjacent(last, p)) return prev;
 
       if (secondLast && p.x === secondLast.x && p.y === secondLast.y) {
-        playForeground(getPath('/media/audio/sfx/stretchycat/backspace.mp3'));
         return {
           ...prev,
           path: path.slice(0, -1),
@@ -399,22 +396,20 @@ const App: React.FC = () => {
           collectedMap.current.add(cellKey);
 
           if (cellType === CellType.TREAT) {
-            playForeground(getPath('/media/audio/sfx/stretchycat/FishReward.mp3'));
+            playForeground(clockSfx);
             setTimeout(() => setTimeLeft(t => (t !== null ? t + 5 : t)), 0);
             newTreats += 1;
             const bonusId = Date.now();
             setTimeBonuses(b => [...b, { id: bonusId, x: p.x, y: p.y, text: '+5s', color: 'text-white' }]);
             setTimeout(() => setTimeBonuses(b => b.filter(i => i.id !== bonusId)), 2000);
           } else {
-            playForeground(getPath('/media/audio/sfx/stretchycat/YarnReward.mp3'));
+            playForeground(shieldSfx);
             scoreAdd += GAME_CONSTANTS.YARN_SCORE_BONUS;
             const bonusId = Date.now();
             setTimeBonuses(b => [...b, { id: bonusId, x: p.x, y: p.y, text: `+${GAME_CONSTANTS.YARN_SCORE_BONUS}`, color: 'text-white' }]);
             setTimeout(() => setTimeBonuses(b => b.filter(i => i.id !== bonusId)), 2000);
           }
         }
-      } else {
-        playForeground(getPath('/media/audio/sfx/stretchycat/stretchspace.mp3'));
       }
 
       const won = newPath.length === level.targetCount && cellType === CellType.SAUCER;
@@ -422,15 +417,10 @@ const App: React.FC = () => {
         isWinProcessed.current = true;
         isTransitioningRef.current = true;
         setTimeBonuses([]);
-        playForeground(getPath('/media/audio/sfx/stretchycat/goal.mp3'));
+        playForeground(flagSfx);
 
         setTimeout(() => {
-          if (levelIndex >= GAME_CONSTANTS.TOTAL_LEVELS) {
-            setGameResult('win');
-            playForeground(getPath('/media/audio/sfx/global/win.mp3'));
-          } else {
-            setLevelIndex(idx => idx + 1);
-          }
+          setLevelIndex(idx => idx + 1);
         }, 300);
       }
 
@@ -573,7 +563,7 @@ const App: React.FC = () => {
 
             <div className="sparkli-level-card">
               <div className="sparkli-level-head">
-                <span>Level {level.id}/{GAME_CONSTANTS.TOTAL_LEVELS}</span>
+                <span>Level {level.id}</span>
                 <span>{gameState.path.length}/{level.targetCount} tiles</span>
               </div>
               <div className="sparkli-progress-track" role="progressbar" aria-valuenow={levelProgress} aria-valuemin={0} aria-valuemax={100}>
@@ -631,7 +621,6 @@ const App: React.FC = () => {
           <footer className="sparkli-footer">
             <FooterLeftContent
               levelId={level.id}
-              totalLevels={GAME_CONSTANTS.TOTAL_LEVELS}
               score={gameState.score}
               onReset={handleFullReset}
               onMenu={returnToMenu}

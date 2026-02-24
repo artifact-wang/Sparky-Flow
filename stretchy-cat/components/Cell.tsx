@@ -145,11 +145,15 @@ const SparkliHeadIcon: React.FC<{ direction: 'up' | 'down' | 'left' | 'right' }>
   const rotation = { up: 0, right: 90, down: 180, left: 270 }[direction];
   const gamePhaseRotationOffset = -90;
   const gamePhaseScale = 1.25;
+  const transform =
+    direction === 'left'
+      ? `scale(${-gamePhaseScale}, ${gamePhaseScale})`
+      : `rotate(${rotation + gamePhaseRotationOffset}deg) scale(${gamePhaseScale})`;
 
   return (
     <div
       className="sparkli-head"
-      style={{ transform: `rotate(${rotation + gamePhaseRotationOffset}deg) scale(${gamePhaseScale})` }}
+      style={{ transform }}
       aria-hidden="true"
     >
       <SparkliCharacter variant="head" />

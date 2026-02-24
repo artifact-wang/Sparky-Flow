@@ -1,0 +1,12 @@
+# Exclude from Cloud Build context
+.git
+.gitignore
+node_modules/
+dist/
+output/
+scripts/
+progress.md
+*.md
+.env
+.env.*
+.DS_Store

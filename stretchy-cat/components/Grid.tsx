@@ -53,13 +53,26 @@ const Grid: React.FC<GridProps> = ({
     const verticalLimit = Math.max(260, windowSize.height - reservedHeight);
 
     const containerSize = Math.min(horizontalLimit, verticalLimit);
-    const calculatedTileSize = Math.floor(containerSize / maxDim);
-    const calculatedGap = Math.max(3, Math.floor(calculatedTileSize * 0.08));
-
+    const gapRatio = maxDim > 10 ? 0.04 : 0.08;
+    const minTileSize = 7;
     const maxTileSize = windowSize.width < 720 ? 74 : 88;
+    let fittedTileSize = Math.max(minTileSize, Math.floor(containerSize / maxDim));
+    let fittedGap = Math.max(1, Math.floor(fittedTileSize * gapRatio));
+
+    while (
+      fittedTileSize > minTileSize &&
+      fittedTileSize * maxDim + fittedGap * (maxDim - 1) > containerSize
+    ) {
+      fittedTileSize -= 1;
+      fittedGap = Math.max(1, Math.floor(fittedTileSize * gapRatio));
+    }
+
+    const tileSize = Math.min(fittedTileSize, maxTileSize);
+    const gap = Math.max(1, Math.floor(tileSize * gapRatio));
+
     return {
-      tileSize: Math.max(26, Math.min(calculatedTileSize, maxTileSize)),
-      gap: calculatedGap,
+      tileSize,
+      gap,
     };
   }, [level.width, level.height, windowSize]);
 

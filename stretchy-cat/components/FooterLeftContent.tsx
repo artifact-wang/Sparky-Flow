@@ -8,7 +8,6 @@ import { HomeIcon, RestartIcon } from './Icons';
 
 interface FooterLeftContentProps {
   levelId: number;
-  totalLevels: number;
   score: number;
   onReset: () => void;
   onMenu: () => void;
@@ -16,7 +15,6 @@ interface FooterLeftContentProps {
 
 const FooterLeftContent: React.FC<FooterLeftContentProps> = ({
   levelId,
-  totalLevels,
   score,
   onReset,
   onMenu,
@@ -26,7 +24,7 @@ const FooterLeftContent: React.FC<FooterLeftContentProps> = ({
       <div className="sparkli-score-copy">
         <span className="sparkli-score-label">Current Run</span>
         <strong>{score.toLocaleString()} pts</strong>
-        <span className="sparkli-score-level">Level {levelId}/{totalLevels}</span>
+        <span className="sparkli-score-level">Level {levelId}</span>
       </div>
       <div className="sparkli-action-group">
         <button
